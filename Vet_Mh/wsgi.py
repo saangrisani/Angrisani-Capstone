@@ -1,5 +1,5 @@
 """
-WSGI config for SportBingo project.
+WSGI config for Vet_Mh project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
