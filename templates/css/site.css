@@ -1,0 +1,24 @@
+/* Basic palette */
+:root{
+  --ink:#223;
+  --accent:#3aa6ff;
+  --bg:#f7f9fc;
+}
+
+html,body{min-height:100%}
+body{margin:0; font-family: system-ui, Arial; color:var(--ink); background:var(--bg);}
+
+/* Page backgrounds (apply with <body class="bg-home"> etc.) */
+.bg-home{      background: linear-gradient(180deg, #ffffff 0%, #eaf4ff 100%); }
+.bg-chat{      background: linear-gradient(180deg, #ffffff 0%, #e8fff6 100%); }
+.bg-about{     background: linear-gradient(180deg, #ffffff 0%, #fff5e6 100%); }
+.bg-resources{ background: linear-gradient(180deg, #ffffff 0%, #f3e8ff 100%); }
+
+/* Simple layout helpers */
+.wrapper{ max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+.card{ background:#fff; border:1px solid #eee; border-radius:12px; padding:1rem; }
+
+/* Simple button/link */
+.btn{ background:var(--accent); color:#fff; padding:.6rem 1rem; border:none; border-radius:8px; text-decoration:none; display:inline-block; }
+a{ color:#2563eb; text-decoration:none; }
+a:hover{ text-decoration:underline; }
