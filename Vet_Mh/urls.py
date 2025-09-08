@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from ai_mhbot import views as ai_views
+from ai_mhbot.views import home, chat
 
 urlpatterns = [
     path("admin/", admin.site.urls),

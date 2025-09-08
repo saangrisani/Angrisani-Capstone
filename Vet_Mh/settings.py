@@ -85,6 +85,7 @@ STATIC_FILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 "Auth redirects"
+ROOT_URLCONF = "Vet_Mh.urls"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
