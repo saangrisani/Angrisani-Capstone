@@ -79,6 +79,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --- Auth redirects ---
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
+LOGIN_URL = "login"
 
 # --- Security toggles (safe for dev; tighten in prod) ---
 SECURE_SSL_REDIRECT = False if DEBUG else True
@@ -87,3 +88,13 @@ CSRF_COOKIE_SECURE = False if DEBUG else True
 
 # Optional: if you’ll load from codespaces/docker previews later
 # CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else []
+# make ALLOWED_HOSTS robust (trims spaces from .env)
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost:8000",
+    "https://127.0.0.1:8000",
+    "https://*.app.github.dev",
+    "https://*.githubpreview.dev",
+]

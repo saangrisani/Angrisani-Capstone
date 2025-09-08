@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sign up · Veterans Companion{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-3">Create your account</h1>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-success w-100">Create account</button>
+        </form>
+        <p class="text-center mt-3 mb-0">
+          Already have an account? <a href="{% url 'login' %}">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
