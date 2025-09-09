@@ -9,8 +9,6 @@ class Message(models.Model):
     role = models.CharField(max_length=16, choices=ROLE_CHOICES)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    # Optional: thread/session if you later want multiple chats per user
-    # thread_id = models.CharField(max_length=64, blank=True, default="default")
 
     class Meta:
         ordering = ["created_at"]

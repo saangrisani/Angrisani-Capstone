@@ -8,26 +8,6 @@
   In crisis, call <strong>988 (Press 1)</strong>.
 </div>
 
-{% if messages %}
-  {% for m in messages %}
-    <div class="alert alert-{{ m.tags }}">{{ m }}</div>
-  {% endfor %}
-{% endif %}
-
-{# Conversation history #}
-<div class="chat-history mb-3">
-  {% for m in history %}
-    <div class="chat-row {{ m.role }}">
-      <div class="bubble">
-        {{ m.content|linebreaksbr }}
-      </div>
-      <div class="meta">{{ m.created_at|date:"M j, Y, g:i a" }}</div>
-    </div>
-  {% empty %}
-    <p class="text-muted">No messages yet. Say hello 👋</p>
-  {% endfor %}
-</div>
-
 {# Compose box #}
 <form method="post" class="card p-3 shadow-sm">
   {% csrf_token %}

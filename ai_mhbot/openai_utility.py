@@ -113,13 +113,11 @@ def complete_chat(
             raise
 
         except Exception as e:
-            # Network hiccup etc. -> give a friendly fallback
             last_exc = e
             break
 
-    # Final friendly fallback (don’t crash the page)
     return (
-        "⚠️ I’m having trouble contacting the AI service right now. "
-        "If you’re in crisis, call 988 (Press 1). Otherwise, I’m listening—"
-        "tell me a bit more about what’s going on."
+        "⚠️ Im having trouble contacting the AI service right now. "
+        "If youre in crisis, call 988 (Press 1). Otherwise, Im listening—"
+        "tell me a bit more about whats going on."
     )
