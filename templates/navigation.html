@@ -5,7 +5,10 @@
   <a href="{% url 'resources' %}">Resources</a>
   <span style="margin-left:auto">
     {% if user.is_authenticated %}
-      Hi, {{ user.username }} · <a href="{% url 'logout' %}">Logout</a>
+      Hi, {{ user.username }} · 
+      <form method="post" action ="{% url  'logout' %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" style="all:unset; color:#0d6efd; curser:pointer; text-decoration:underline;"> 
     {% else %}
       <a href="{% url 'login' %}">Login</a> · <a href="{% url 'signup' %}">Sign up</a>
     {% endif %}

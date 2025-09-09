@@ -78,7 +78,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Auth redirects ---
 LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "login"
+LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
 
 # --- Security toggles (safe for dev; tighten in prod) ---

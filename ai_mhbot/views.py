@@ -1,51 +1,62 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login as auth_login
 from django.shortcuts import render, redirect
-from django.utils import timezone
 from django.contrib import messages as dj_messages
 from django.views.decorators.http import require_http_methods
 
-from .models import Message
+#from .models import Message
 from .openai_utility import complete_chat
 
-@login_required
+
+
 def home(request):
     return render(request, "home.html")
+
 
 @login_required
 @require_http_methods(["GET", "POST"])
 def chat(request):
-    last = request.session.get("last_post_ts")
-    now = timezone.now().timestamp()
-
+    reply = None
     if request.method == "POST":
-        if last and (now - float(last)) < 2.0:
-            dj_messages.warning(request, "Please wait a moment before sending again.")
+        return render(request, "chat.html", {"reply": None})
+    user_text = (request.POST.get("message") or request.POST.get("text") or "").strip()    
+
+    if not user_text:
+            dj_messages.error(request, "Please tell me what I can help with today to serve your mental health needs.")
             return redirect("chat")
+    payload = [
+        {
+        "role": "system",
+        "content": (
+            "You are a supportive, non-clinical and non medical mental health companion for U.S. military veterans."
+            "Be empathetic and practical. Do not provide medical, legal, or financial advice."
+            "If the user is in crisis, or the following crisis indicators appear(self-harm, harm to others, suicide ideations), advise veteran to call 988(Press option 1)."
+            ),
+        },
+        {"role": "user", "content": user_text},
+    ]
+    reply = complete_chat(payload)
+    return render(request, "chat.html", {"reply": reply})    
 
-        text = (request.POST.get("message") or "").strip()
-        if not text:
-            dj_messages.error(request, "Please enter a message.")
-            return redirect("chat")
-
-        Message.objects.create(user=request.user, role="user", content=text)
-
-        history = list(Message.objects.filter(user=request.user).order_by("-created_at")[:12])
-        history.reverse()
-        payload = [{"role": m.role, "content": m.content} for m in history]
-        payload.insert(0, {"role": "system", "content": "Be supportive and non-clinical. Crisis? Advise 988 (Press 1)."})
-
-        reply = complete_chat(payload)
-        Message.objects.create(user=request.user, role="assistant", content=reply)
-
-        request.session["last_post_ts"] = str(now)
-        return redirect("chat")
-
-    history = Message.objects.filter(user=request.user).order_by("created_at")
-    return render(request, "chat.html", {"history": history})
-
-# NEW minimal pages (no login needed)
+# about page
 def about(request):
     return render(request, "app1/about.html")
 
+#resources page
 def resources(request):
     return render(request, "app1/resources.html")
+
+
+# Sign up 
+def signup(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            auth_login(request, user)
+            dj_messages.success(request, "Welcome! Your account was created successfully.")
+            return redirect("home")
+    else:
+        form = UserCreationForm()
+    return render(request, "signup.html", {"form": form})

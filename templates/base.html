@@ -10,9 +10,14 @@
       <div class="container">
         <a class="navbar-brand fw-bold" href="/">Veterans Mental Health Companion</a>
         <div class="ms-auto">
+          <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'home' %}">Home</a>
+          <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'about' %}">About</a>
+          <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'resources' %}">Resources</a>
           {% if user.is_authenticated %}
-            <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'home' %}">Home</a>
+            
             <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'chat' %}">Chat</a>
+            
+      
             <a class="btn btn-danger btn-sm" href="{% url 'logout' %}">Logout</a>
           {% else %}
             <a class="btn btn-primary btn-sm" href="{% url 'login' %}">Login</a>
