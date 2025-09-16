@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "ai_mhbot",  # <- your app
+    "ai_mhbot",  #my application
 ]
 
 MIDDLEWARE = [
@@ -36,7 +36,10 @@ ROOT_URLCONF = "Vet_Mh.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [
+            BASE_DIR / "templates",
+            BASE_DIR / "templates" / "app1"
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -77,9 +80,9 @@ STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Auth redirects ---
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
-LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "/chat/"
+LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = "/login/"
 
 # --- Security toggles (safe for dev; tighten in prod) ---
 SECURE_SSL_REDIRECT = False if DEBUG else True

@@ -1,5 +1,4 @@
-{% extends "base.html" %}
-{% block body_class %}bg-chat{% endblock %}
+{% extends "app1/base.html" %}
 {% block title %}Chat · Veterans Companion{% endblock %}
 
 {% block content %}
@@ -8,14 +7,30 @@
   In crisis, call <strong>988 (Press 1)</strong>.
 </div>
 
-{# Compose box #}
-<form method="post" class="card p-3 shadow-sm">
+{% if messages %}
+  <div class="mt-2">
+    {% for m in messages %}
+      <div class="alert {% if m.tags %}alert-{{ m.tags }}{% else %}alert-info{% endif %}">{{ m }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<form method="post" action="{% url 'chat' %}" class="card p-3 shadow-sm mt-2" autocomplete="off">
   {% csrf_token %}
   <label for="id_message" class="form-label">Your message</label>
-  <textarea id="id_message" name="message" rows="3" class="form-control" required></textarea>
+  <textarea id="id_message" name="message" rows="3" class="form-control" required>{{ user_text|default_if_none:"" }}</textarea>
   <div class="mt-2 d-flex gap-2">
     <button type="submit" class="btn btn-primary">Send</button>
     <a href="{% url 'chat' %}" class="btn btn-outline-secondary">Refresh</a>
   </div>
 </form>
+
+{% if reply %}
+  <div class="card mt-3 shadow-sm">
+    <div class="card-body">
+      <strong>Assistant:</strong>
+      <div class="mt-2">{{ reply|linebreaks }}</div>
+    </div>
+  </div>
+{% endif %}
 {% endblock %}
