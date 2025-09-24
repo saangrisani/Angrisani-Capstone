@@ -63,7 +63,7 @@ def chat(request):
                 "You are a supportive, non-clinical and non medical mental health companion "
                 "for U.S. military veterans. Be empathetic and practical. Do not provide "
                 "medical, legal, or financial advice. If the user is in crisis (self-harm, "
-                "harm to others, suicide ideations), advise calling 988 (press 1)."
+                "harm to others, suicide ideations), advise calling 988 (press 1). "
             ),
         },
         {"role": "user", "content": user_text},
