@@ -7,11 +7,12 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     #authorization urls
     path("login/",  auth_views.LoginView.as_view(template_name="app1/login.html", redirect_authenticated_user=False), name="login"),
-    path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
+    path("logout/", auth_views.LogoutView.as_view(template_name="app1/logout.html"), name="logout"),
     #my application webpages
     path("", home, name="home"),
     path("chat/", chat, name="chat"),
     path("signup/", signup, name="signup"),
     path("about/", about, name="about"),
     path("resources/", resources, name="resources"),
+    path("profile/", auth_views.TemplateView.as_view(template_name="app1/profile.html"), name="profile"),
 ]

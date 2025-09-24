@@ -20,7 +20,7 @@ def resources(request):
     return render(request, "app1/resources.html")
 
 # -------------------------- authorized / account pages ---------------------------
-@login_required
+
 # Sign up 
 def signup(request):
     if request.method == "POST":
@@ -34,8 +34,11 @@ def signup(request):
         form = UserCreationForm()
     return render(request, "signup.html", {"form": form})
 
-
+@login_required
+def profile(request):
+    return render(request, "app1/profile.html")
 @require_http_methods(["GET", "POST"])
+@login_required
 def chat(request):
     if request.method == "GET":
         return render(request, "app1/chat.html")
