@@ -1,10 +1,105 @@
 {% extends "base.html" %}
-{% block body_class %}bg-home{% endblock %}
+{% load static %}
+
 {% block title %}Home · Veterans Companion{% endblock %}
+{% block body_class %}bg-home{% endblock %}
+
+{% block head_extra %}
+  <!-- Preload only on pages that use the image -->
+  <link rel="preload" as="image" href="{% static 'images/sadvet.jpg' %}" fetchpriority="high">
+{% endblock %}
+
+{% block page_bg %}
+  <!-- Smaller background band (adjust height/top here) -->
+  <div class="bg-layer" aria-hidden="true">
+    <img
+      src="{% static 'images/sadvet.jpg' %}"
+      alt=""
+      loading="eager"
+      style="
+        position:absolute;
+        width:100%;
+        height:16vh;     /* ↓ band height */
+        top:9vh;         /* ↓ distance from top */
+        object-fit:cover;
+        object-position:center;
+        image-rendering:auto;
+      "
+    >
+  </div>
+  <!-- Lighter overlay to avoid 'blurry' look -->
+  <div class="bg-overlay" aria-hidden="true" style="background: rgba(0,0,0,.10);"></div>
+{% endblock %}
 
 {% block content %}
-<div class="p-4 bg-white shadow-sm rounded-3">
-  <h1 class="h4 mb-2">Welcome to the Veterans Mental Health Assistance Page</h1>
-  <p class="text-muted mb-0">You’re logged in. Use the navbar to open the Chat, read about this site, or find mental health resources for veterans.</p>
-</div>
+  <div class="p-4 bg-blue shadow-sm rounded-3">
+    <h1 class="h4 mb-2">Welcome to the Veterans Mental Health Assistance Page</h1>
+    <p class="text-muted mb-0">You’re logged in. Use the navbar to open the Chat, read about this site, or find mental health resources for veterans.</p>
+  </div>
+  <!-- QUICK LINKS -->
+<section class="mt-4">
+  <h2 class="h5 mb-3">Quick Links</h2>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card card-fun h-100">
+        <div class="card-body">
+          <h5 class="card-title">Open Chat</h5>
+          <p class="text-muted">Ask questions or get guided help.</p>
+          <a class="btn btn-fun" href="{% url 'chat' %}">Start Chat</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-fun h-100">
+        <div class="card-body">
+          <h5 class="card-title">Find Facilities</h5>
+          <p class="text-muted">Search nearby VA care and services.</p>
+          <a class="btn btn-outline-light" href="{% url 'resources' %}#facilities">Search</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-fun h-100">
+        <div class="card-body">
+          <h5 class="card-title">Benefits & Claims</h5>
+          <p class="text-muted">Start exploring options and guides.</p>
+          <a class="btn btn-outline-light" href="{% url 'resources' %}#benefits">View Guides</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY & SAFETY NOTE -->
+<section class="mt-4">
+  <div class="card card-fun">
+    <div class="card-body">
+      <h2 class="h5 mb-2">Privacy & Safety</h2>
+      <p class="mb-2 text-muted">
+        We don’t store personal health details in this demo. If you’re in crisis, call <strong>988</strong> (press 1),
+        text <strong>838255</strong>, or visit the Veterans Crisis Line. For details on analytics and data handling, see our
+        <a href="{% url 'about' %}#privacy">Privacy Policy</a>.
+      </p>
+      <a class="btn btn-outline-light" href="{% url 'about' %}#privacy">Read Privacy</a>
+    </div>
+  </div>
+</section>
+
+<!-- SHORT READ: 5-MIN GROUNDING EXERCISE -->
+<section class="mt-4" id="read">
+  <div class="card card-fun">
+    <div class="card-body">
+      <h2 class="h5 mb-3">A 5-Minute Grounding Exercise</h2>
+      <ol class="mb-3">
+        <li><strong>Look</strong> for 5 things you can see. Name them slowly.</li>
+        <li><strong>Touch</strong> 4 things you can feel (chair, floor, fabric, air).</li>
+        <li><strong>Listen</strong> for 3 sounds (near → far).</li>
+        <li><strong>Smell</strong> 2 scents (or recall ones you like).</li>
+        <li><strong>Breathe</strong> in for 4, hold 4, out for 6 — 5 times.</li>
+      </ol>
+      <p class="text-muted mb-0">Tip: Pair this with a brief walk or stretch. If symptoms persist or feel severe, contact a professional.</p>
+    </div>
+  </div>
+</section>
+
 {% endblock %}

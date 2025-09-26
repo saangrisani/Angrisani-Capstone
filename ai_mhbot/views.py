@@ -1,27 +1,50 @@
+# ai_mhbot/views.py
+import math
+import requests
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
 from django.shortcuts import render, redirect
 from django.contrib import messages as dj_messages
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
+from django.http import JsonResponse
 
-#from .models import Message
+# If you call OpenAI
 from .openai_utility import complete_chat
 
+# ------------------------- Guardrails: system role + few-shots -------------------------
+SYSTEM_ROLE = """You are a supportive, non-clinical mental health companion for U.S. military veterans and their families.
 
-# -------------------------public pages ------------------------
+Core rules:
+- Be empathetic, practical, and brief. Normalize seeking help.
+- Offer general well-being ideas only (grounding, sleep hygiene, stress management, self-care planning).
+- Do NOT provide medical advice, diagnoses, treatment plans, or instructions to start/stop/change medications.
+- Do NOT recommend specific medications or interpret symptoms.
+- Prefer resources: VA Mental Health, Vet Centers, crisis options (988 press 1).
+- If there is self-harm/violence risk, do not continue a normal chat; give crisis options (988 press 1, text 838255, veteranscrisisline.net) and encourage emergency services if in immediate danger.
+- Avoid collecting sensitive personal information. If users share it, do not repeat it back.
+"""
+
+FEW_SHOTS = [
+    {"role": "user", "content": "I feel keyed up lately and can’t sleep. Any tips?"},
+    {"role": "assistant", "content": "That’s really tough—thanks for sharing. Try a slow 4-4-6 breathing cycle for a couple minutes, dim screens an hour before bed, and keep your room cool and dark. If you wake, avoid the clock and do a brief body scan. I can also point you to VA sleep resources or help find a clinic nearby."},
+    {"role": "user", "content": "Should I start Zoloft?"},
+    {"role": "assistant", "content": "I can’t provide medical advice or recommend medications. A clinician can help you decide. If you’d like, I can share general coping ideas and help you find a provider or Vet Center."},
+]
+
+# ------------------------- Public pages -------------------------
 def home(request):
     return render(request, "app1/home.html")
-# about page
+
 def about(request):
     return render(request, "app1/about.html")
-#resources page
+
 def resources(request):
     return render(request, "app1/resources.html")
 
-# -------------------------- authorized / account pages ---------------------------
-
-# Sign up 
+# -------------------------- Auth / account pages --------------------------
 def signup(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -37,6 +60,7 @@ def signup(request):
 @login_required
 def profile(request):
     return render(request, "app1/profile.html")
+
 @require_http_methods(["GET", "POST"])
 @login_required
 def chat(request):
@@ -56,30 +80,18 @@ def chat(request):
         dj_messages.error(request, "Please tell me what I can help with today to serve your mental health needs.")
         return render(request, "app1/chat.html", {"reply": None})
 
-    payload = [
-        {
-            "role": "system",
-            "content": (
-                "You are a supportive, non-clinical and non medical mental health companion "
-                "for U.S. military veterans. Be empathetic and practical. Do not provide "
-                "medical, legal, or financial advice. If the user is in crisis (self-harm, "
-                "harm to others, suicide ideations), advise calling 988 (press 1). "
-            ),
-        },
-        {"role": "user", "content": user_text},
+    payload = [{"role": "system", "content": SYSTEM_ROLE}] + FEW_SHOTS + [
+        {"role": "user", "content": user_text}
     ]
 
     try:
         raw = complete_chat(payload)
-
-        # Coerce common return shapes -> string
         reply = None
         if raw is None:
             reply = None
         elif isinstance(raw, str):
             reply = raw
         elif isinstance(raw, dict):
-            # Try a few common keys/paths
             reply = (
                 raw.get("content")
                 or raw.get("message", {}).get("content")
@@ -87,21 +99,17 @@ def chat(request):
                 or raw.get("choices", [{}])[0].get("delta", {}).get("content")
             )
         elif isinstance(raw, (list, tuple)):
-            # e.g., [{"role":"assistant","content":"..."}]
             for item in raw:
                 if isinstance(item, dict) and item.get("role") == "assistant" and item.get("content"):
                     reply = item["content"]
                     break
-
         if not reply:
             dj_messages.warning(request, "I didn’t get a usable response from the chat backend.")
             reply = None
-
     except Exception as e:
         dj_messages.error(request, f"Chat backend error: {e}")
         reply = None
 
     return render(request, "app1/chat.html", {"reply": reply, "user_text": user_text})
-
 
 

@@ -1,15 +1,19 @@
+# Vet_Mh/settings.py
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
+# Load .env from project root (folder with manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
-# --- Core settings ---
+# --- Core ---
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# Comma or space separated hosts are fine
+_allowed = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1").replace(",", " ")
+ALLOWED_HOSTS = [h for h in _allowed.split() if h]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -18,7 +22,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "ai_mhbot",  #my application
+    "ai_mhbot",  # your app
 ]
 
 MIDDLEWARE = [
@@ -36,10 +40,7 @@ ROOT_URLCONF = "Vet_Mh.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "templates",
-            BASE_DIR / "templates" / "app1"
-        ],
+        "DIRS": [BASE_DIR / "templates", BASE_DIR / "templates" / "app1"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -54,6 +55,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "Vet_Mh.wsgi.application"
 
+# --- DB (sqlite by default) ---
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -61,6 +63,7 @@ DATABASES = {
     }
 }
 
+# --- Auth / i18n ---
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -69,10 +72,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "America/Los_Angeles"  # optional but matches your locale
+TIME_ZONE = "America/Los_Angeles"
 USE_I18N = True
 USE_TZ = True
 
+# --- Static ---
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
@@ -84,17 +88,19 @@ LOGIN_REDIRECT_URL = "/chat/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/login/"
 
-# --- Security toggles (safe for dev; tighten in prod) ---
-SECURE_SSL_REDIRECT = False if DEBUG else True
-SESSION_COOKIE_SECURE = False if DEBUG else True
-CSRF_COOKIE_SECURE = False if DEBUG else True
+# --- Security toggles (tighten in prod) ---
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
+# CSRF trusted origins: space-separated env, with sane defaults
+_csrf_env = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:8000 http://127.0.0.1:8000 https://*.app.github.dev https://*.githubpreview.dev",
+)
+CSRF_TRUSTED_ORIGINS = [o for o in _csrf_env.split() if o]
 
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://localhost:8000",
-    "https://127.0.0.1:8000",
-    "https://*.app.github.dev",
-    "https://*.githubpreview.dev",
-]
+# --- API keys from .env ---
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+VA_FACILITIES_API_KEY = os.getenv("VA_FACILITIES_API_KEY", "")

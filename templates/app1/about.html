@@ -1,12 +1,47 @@
 {% extends "base.html" %}
-{% block title %}About · Vet MH Bot{% endblock %}
-{% block body_class %}bg-about{% endblock %}
+{% load static %}
+{% block title %}About · Veterans Companion{% endblock %}
+{% block body_class %}about{% endblock %}
+
+{% block page_bg %}
+  <div class="bg-layer" aria-hidden="true" style="--band-h:14vh; --band-top:8vh;">
+    <img src="{% static 'images/about-hero@2x.jpg' %}" alt="" loading="eager">
+  </div>
+  <div class="bg-overlay" aria-hidden="true" style="--overlay:.10"></div>
+{% endblock %}
 
 {% block content %}
-  <section class="card">
-    <h1>About</h1>
-    <p>Vet MH Bot offers supportive, non-clinical conversation and helpful links for U.S. veterans. </p>
-    
-    <p>In crisis? Call <strong>988</strong> (Press <strong>1</strong>) or text <strong>838255</strong>.</p>
-  </section>
-{% endblock %}
+  <h1 class="h3 mb-3">About Veterans Companion</h1>
+  <p class="lead">Veterans Companion is a student capstone project designed to help Veterans and families quickly find mental-health resources, facilities, and practical self-help tools.</p>
+
+  <div class="row g-3 mt-1">
+    <div class="col-md-6">
+      <div class="card card-fun h-100">
+        <div class="card-body">
+          <h5 class="card-title">Our Mission</h5>
+          <p class="mb-0">Make it easier to discover VA and community care, understand benefits, and take simple steps toward better well-being—without the maze of tabs and forms.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card card-fun h-100">
+        <div class="card-body">
+          <h5 class="card-title">What This Is / Isn’t</h5>
+          <ul class="mb-0">
+            <li>✅ A guide to resources and helpful tools.</li>
+            <li>✅ A way to locate nearby VA facilities.</li>
+            <li>❌ Not medical advice; not a crisis service.</li>
+            <li>❌ Not an official VA application.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="privacy" class="h5 mt-4">Privacy Policy (Summary)</h2>
+  <p>This site does not store personal data beyond what is needed for authentication (login) and basic operation. Chat messages are processed by an AI service but are not stored or used for training. No cookies or tracking technologies are used.</p>
+  <p>For full details, see the <a href="{% static 'docs/privacy_policy.txt' %}" target="_blank" rel="noopener">complete privacy policy</a>.</p>
+  <p>If you have questions or concerns about privacy, please <a href="mailto:saangrisani@csuchico.edu">contact the developer</a>.</p> 
+  <p>This site is a student project and is not affiliated with or endorsed by the U.S. Department of Veterans Affairs.</p>
+  {% endblock %}
+

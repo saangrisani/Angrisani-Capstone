@@ -1,17 +1,37 @@
-{% extends "base.html" %}
-{% block title %}Resources · Vet MH Bot{% endblock %}
+{% extends "base.html %}
+{% load static %}
+{% block title %}Resources * Veterans Companion{% endblock %}
 {% block body_class %}bg-resources{% endblock %}
 
 {% block content %}
-  <section class="card">
-    <h1>Resources</h1>
-    <ul>
-      <li><a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">Veterans Crisis Line</a></li>
-      <li><a href="https://www.mentalhealth.va.gov/" target="_blank" rel="noopener">VA Mental Health</a></li>
-      <li><a href="https://www.ptsd.va.gov/" target="_blank" rel="noopener">National Center for PTSD</a></li>
-      <li><a href="https://www.samhsa.gov/find-help/national-helpline" target="_blank" rel="noopener">SAMHSA Helpline</a></li>
-      <li><a href="https://www.vetcenter.va.gov/" target ="_blank" rel="noopener">Vet Centers</a></li>
-      <li>
-    </ul>
-  </section>
+<section class="card p-3 mb-4">
+  <h1 class="h4 mb-3">Resources</h1>
+  <p class="text-muted">
+    Helpful links for support. In an emergency, call <strong>988 (Press 1)</strong>, text <strong>838255</strong>, or
+    visit <a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">veteranscrisisline.net</a>.
+  </p>
+<ul class="mb-0">
+    <li><a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">Veterans Crisis Line</a></li>
+    <li><a href="https://www.mentalhealth.va.gov/" target="_blank" rel="noopener">VA Mental Health</a></li>
+    <li><a href="https://www.mentalhealth.va.gov
+    <li><a href="https://www.ptsd.va.gov/" target="_blank" rel="noopener">PTSD: National Center for PTSD</a></li>
+    <li><a href="https://www.vetcenter.va.gov/" target="_blank" rel="noopener">Vet Center</a></li>
+</ul>
+</section>
+<section class="card p-3 mb-4">
+  <h2 class="h5 mb-3">Quick exercises</h2>
+  <p class="text-muted">
+    Here are some short practice exercises to help you manage stress and anxiety any time. </p>
+    <div class="d-flex flex-column gap-2">
+      <a href="{% url 'exercise_breathing' %}" class="btn btn-outline-primary">Breathing exercise</a>
+      <a href="{% url 'exercise_grounding' %}" class="btn btn-outline-primary">Grounding exercise</a>
+      <a href="{% url 'exercise_sleep' %}" class="btn btn-outline-primary">Sleep tips</a>
+    </div>
+</section>
+
+<section class="card p-3">
+    <h2 class="h5 mb-2"> Find Local VA resources (coming very soon)</h2>
+    <p class="text-muted"> Will add a location search powered by google places to show nearby VA and mental health resources, but having technical issues right now. </p>
+    </section>
 {% endblock %}
+
