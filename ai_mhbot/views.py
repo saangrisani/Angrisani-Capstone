@@ -43,6 +43,14 @@ def about(request):
 
 def resources(request):
     return render(request, "app1/resources.html")
+def feedback(request):
+    return render(request, "app1/feedback.html")
+def exercise_breathing(request):
+    return render(request, "app1/exercise_breathing.html")
+def exercise_grounding(request):
+    return render(request, "app1/exercise_grounding.html")
+def exercise_sleep(request):
+    return render(request, "app1/exercise_sleep.html")
 
 # -------------------------- Auth / account pages --------------------------
 def signup(request):
