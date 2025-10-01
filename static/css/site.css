@@ -1,52 +1,48 @@
-:root{
-  --c1:#6C63FF; --c2:#FF6584; --c3:#00D1B2; --c4:#FFC857; --c5:#06D6A0;
-  --ink:#0e1726; --ink-2:#243b53; --bg:#0b1020; --card:#121a2e; --muted:#a1b2c7;
+/* ==== Dark site background & smooth polish ==== */
+body.site-bg{
+  background:#0b1020;           /* deep navy */
+  color:#e9eef4;                 /* soft light text */
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  scroll-behavior:smooth;
 }
 
-/* Fullscreen (or band) background */
-.bg-layer{
-  position: fixed; inset: 0; z-index: -2;
-}
-.bg-layer img{
-  width: 100%;
-  height: 30vh;          /* band height */
-  top: 35vh;             /* center the band */
-  position: absolute;
-  object-fit: cover;
-  object-position: center;
-  image-rendering: auto;
-}
-.bg-overlay{
-  position: fixed; inset: 0; z-index: -1;
-  pointer-events: none;
-  background: rgba(0,0,0,.15);
-}
-/* keep page content above overlays */
-main.container{ position: relative; z-index: 1; }
+/* Darken the image overlay so the hero blends smoothly */
+.bg-overlay{ background: rgba(0,0,0,.45); }
 
-/* Optional: make it a full hero by overriding just these on a page class */
-.bg-home .bg-layer img.full-hero{ height: 72vh; top: 0; }
+/* Cards feel lighter-glass on dark bg */
+.card{ border-radius:1rem; }
+.card-fun{
+  background: rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:#f1f5f9;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
 
-/* Fun colors/extras you added */
-.page-gradient{
-  background: linear-gradient(120deg,var(--c1),var(--c2),var(--c3),var(--c4),var(--c5));
-  background-size: 300% 300%;
-  animation: gradientShift 18s ease infinite;
+/* Primary white card (hero welcome) on dark bg */
+.hero-card{
+  background: #ffffff;
+  color: #0b1020;
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 10px 32px rgba(0,0,0,.35);
 }
-@keyframes gradientShift{
-  0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}
-}
-.card-fun{ background: linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
-  border:1px solid rgba(255,255,255,.1); border-radius:1rem; backdrop-filter:saturate(120%) blur(4px);
-  box-shadow:0 8px 30px rgba(0,0,0,.25); transition:transform .18s, box-shadow .18s;}
-.card-fun:hover{ transform:translateY(-4px) scale(1.01); box-shadow:0 14px 38px rgba(0,0,0,.35);}
-.btn-fun{ background:var(--c3); border:none; color:#081018; font-weight:700; border-radius:999px; padding:.65rem 1.1rem; position:relative; overflow:hidden;}
-.btn-fun::after{ content:""; position:absolute; inset:0;
-  background: radial-gradient(120px 120px at var(--x,50%) var(--y,50%), rgba(255,255,255,.35), transparent 60%);
-  opacity:0; transition:opacity .2s;}
-.btn-fun:hover::after{ opacity:1;}
-.gradient-text{ background:linear-gradient(90deg,var(--c4),var(--c2),var(--c1)); -webkit-background-clip:text; background-clip:text; color:transparent;}
-.reveal{ opacity:0; transform:translateY(12px) scale(.98); transition:all .6s ease;}
-.reveal.in{ opacity:1; transform:none;}
-.pill{ display:inline-block; padding:.35rem .7rem; border-radius:999px; font-size:.85rem; font-weight:600; color:#09111f; background:var(--c5); margin:.25rem;}
-.pill.alt{ background:var(--c4);} .pill.alt2{ background:var(--c2); color:#fff;}
+
+/* Buttons pop against dark */
+.btn{ border-radius:.75rem; }
+.btn-fun{ background:var(--c3); color:#fff; }
+.btn-outline-light{ color:#f8fafc; border-color:rgba(255,255,255,.5); }
+.btn-outline-light:hover{ background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.8); }
+
+/* Muted text tone on dark */
+.text-muted{ color:#9db0c1 !important; }
+
+/* Links readable on dark */
+a { color:#9ecbff; }
+a:hover { color:#bfe0ff; }
+
+/* Keep main content above background layers */
+main.container{ position:relative; z-index:1; }
+
+/* Optional: softer section spacing */
+.section-gap{ margin-top:1.25rem; }

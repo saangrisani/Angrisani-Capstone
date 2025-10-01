@@ -1,7 +1,7 @@
 {% extends "app1/base.html" %}
 {% load static %}
-{% block title %}Breathing Exercise - Veteran's Companion App {% endblock %}
-{% block body_class %}bg-home{% endblock %}
+{% block title %}Home · Veterans Companion{% endblock %}
+{% block body_class %}site-bg bg-home{% endblock %}
 
 {% block head_extra %}
   <link rel="preload" as="image" href="{% static 'images/sadvet.jpg' %}" fetchpriority="high">
@@ -10,19 +10,21 @@
 {% block page_bg %}
   <div class="bg-layer" aria-hidden="true">
     <img src="{% static 'images/sadvet.jpg' %}" alt="" loading="eager"
-         style="position:absolute;width:100%;height:16vh;top:9vh;object-fit:cover;object-position:center;">
+         style="position:absolute;width:100%;height:18vh;top:7vh;object-fit:cover;object-position:center;">
   </div>
-  <div class="bg-overlay" aria-hidden="true" style="background: rgba(0,0,0,.10);"></div>
+  <div class="bg-overlay" aria-hidden="true"></div>
 {% endblock %}
 
 {% block content %}
-<div class="p-4 bg-white shadow-sm rounded-3">
+<div class="hero-card p-4">
   <h1 class="h4 mb-2">Welcome to the Veterans Mental Health Assistance Page</h1>
-  <p class="text-muted mb-0">Use the navbar to open Chat, read About, or find mental-health resources for veterans.</p>
+  <p class="text-muted mb-0">
+    Use the navbar to open the Chat, read About, or find mental-health resources for veterans.
+  </p>
 </div>
 
-<section class="mt-4">
-  <h2 class="h5 mb-3">Quick Links</h2>
+<section class="section-gap">
+  <h2 class="h5 mb-3 text-light">Quick Links</h2>
   <div class="row g-3">
     <div class="col-md-4">
       <div class="card card-fun h-100">
@@ -54,33 +56,5 @@
   </div>
 </section>
 
-<section class="mt-4">
-  <div class="card card-fun">
-    <div class="card-body">
-      <h2 class="h5 mb-2">Privacy & Safety</h2>
-      <p class="mb-2 text-muted">
-        We don’t store personal health details in this demo. If you’re in crisis, call <strong>988</strong> (press 1),
-        text <strong>838255</strong>, or visit the Veterans Crisis Line. For details, see our
-        <a href="{% url 'about' %}#privacy">Privacy Policy</a>.
-      </p>
-      <a class="btn btn-outline-light" href="{% url 'about' %}#privacy">Read Privacy</a>
-    </div>
-  </div>
-</section>
-
-<section class="mt-4" id="read">
-  <div class="card card-fun">
-    <div class="card-body">
-      <h2 class="h5 mb-3">A 5-Minute Grounding Exercise</h2>
-      <ol class="mb-3">
-        <li><strong>Look</strong> for 5 things you can see. Name them slowly.</li>
-        <li><strong>Touch</strong> 4 things you can feel (chair, floor, fabric, air).</li>
-        <li><strong>Listen</strong> for 3 sounds (near → far).</li>
-        <li><strong>Smell</strong> 2 scents (or recall ones you like).</li>
-        <li><strong>Breathe</strong> in for 4, hold 4, out for 6 — 5 times.</li>
-      </ol>
-      <p class="text-muted mb-0">Tip: Pair this with a brief walk or stretch.</p>
-    </div>
-  </div>
-</section>
+<!-- keep your other sections; they'll inherit the dark theme nicely -->
 {% endblock %}

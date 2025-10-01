@@ -4,16 +4,16 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
 from django.shortcuts import render, redirect
 from django.contrib import messages as dj_messages
 from django.views.decorators.http import require_http_methods, require_GET
 from django.http import JsonResponse
 
-# If you call OpenAI
 from .openai_utility import complete_chat
 
+# custom form
+from django.contrib.auth.forms import CustomUserCreationForm, CustomUserCreationForm
 # ------------------------- Guardrails: system role + few-shots -------------------------
 SYSTEM_ROLE = """You are a supportive, non-clinical mental health companion for U.S. military veterans and their families.
 
@@ -43,30 +43,43 @@ def about(request):
 
 def resources(request):
     return render(request, "app1/resources.html")
+
 def feedback(request):
     return render(request, "app1/feedback.html")
+
 def exercise_breathing(request):
     return render(request, "app1/exercise_breathing.html")
+
 def exercise_grounding(request):
     return render(request, "app1/exercise_grounding.html")
+
 def exercise_sleep(request):
     return render(request, "app1/exercise_sleep.html")
 
 # -------------------------- Auth / account pages --------------------------
 def signup(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
             dj_messages.success(request, "Welcome! Your account was created successfully.")
             return redirect("home")
     else:
-        form = UserCreationForm()
-    return render(request, "signup.html", {"form": form})
+        form = CustomUserCreationForm()
+    return render(request, "app1/signup.html", {"form": form})
 
 @login_required
 def profile(request):
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            dj_messages.success(request, "Profile updated successfully.")
+            return redirect("profile")
+    else:
+        form = UserProfileForm(instance=request.user)
+
     return render(request, "app1/profile.html")
 
 @require_http_methods(["GET", "POST"])
