@@ -1,0 +1,20 @@
+{%extends "app1/base.html" %}
+{% block title %}Sleep Exercise - Veteran's Companion App {% endblock %}
+{% block body_class %} bg-exercise{% endblock %}
+
+{% block content %}
+
+<div class="card p-3">
+    <h1 class="h4 mb-3">Sleep tips</h1>
+    <ul class="mb-3">
+        <li>Keep a consistent sleep and wake time (even on the weekends)</li>
+        <li>Limit screen time for 60 minutes prior to going to bed; dim the lights; meditate</li>
+        <li>Keep the room cool, dark, and quiet</li>
+        <li>Avoid caffeine within 6 to 8 hours prior to going to bed</li>
+        <li>Avoid alcohol before bed</li>
+        <li>Get regular exercise, but not too close to bedtime</li> 
+    </ul>
+    <a href="{% url 'resources' %}" class="btn btn-outline-primary">Back to resources</a>
+</div>
+
+{% endblock %}

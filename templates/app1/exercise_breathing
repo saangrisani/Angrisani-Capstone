@@ -1,0 +1,21 @@
+{%extends "app1/base.html" %}
+{% block title %}Breathing Exercise - Veteran's Companion App {% endblock %}
+{% block body_class %} bg-exercise{% endblock %}
+
+{% block content %}
+
+<div class="card p-3">
+    <h1 class="h4 mb-3">Breathing Exercise</h1>
+    <p class="text-muted mb-3">Use this to relax and reduce stress</p>
+    <ul class="mb-3">
+        <li>Sit or lie down comfortably</li>
+        <li>Close your eyes</li>
+        <li>Take a deep breath in through your nose for a count of 4</li>
+        <li>Hold your breath for a count of 7</li>
+        <li>Exhale completely through your mouth for a count of 8</li>
+        <li>Repeat 4 times or until you feel calm</li>
+    </ul>
+    <a href="{% url 'resources' %}" class="btn btn-outline-primary">Back to resources</a>
+</div>
+
+{% endblock %}

@@ -1,6 +1,5 @@
-{% extends "base.html %}
-{% load static %}
-{% block title %}Resources * Veterans Companion{% endblock %}
+{% extends "app1/base.html" %}
+{% block title %}Breathing Exercise - Veteran's Companion App {% endblock %}
 {% block body_class %}bg-resources{% endblock %}
 
 {% block content %}
@@ -10,28 +9,26 @@
     Helpful links for support. In an emergency, call <strong>988 (Press 1)</strong>, text <strong>838255</strong>, or
     visit <a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">veteranscrisisline.net</a>.
   </p>
-<ul class="mb-0">
+  <ul class="mb-0">
     <li><a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">Veterans Crisis Line</a></li>
     <li><a href="https://www.mentalhealth.va.gov/" target="_blank" rel="noopener">VA Mental Health</a></li>
-    <li><a href="https://www.mentalhealth.va.gov
     <li><a href="https://www.ptsd.va.gov/" target="_blank" rel="noopener">PTSD: National Center for PTSD</a></li>
     <li><a href="https://www.vetcenter.va.gov/" target="_blank" rel="noopener">Vet Center</a></li>
-</ul>
+  </ul>
 </section>
+
 <section class="card p-3 mb-4">
   <h2 class="h5 mb-3">Quick exercises</h2>
-  <p class="text-muted">
-    Here are some short practice exercises to help you manage stress and anxiety any time. </p>
-    <div class="d-flex flex-column gap-2">
-      <a href="{% url 'exercise_breathing' %}" class="btn btn-outline-primary">Breathing exercise</a>
-      <a href="{% url 'exercise_grounding' %}" class="btn btn-outline-primary">Grounding exercise</a>
-      <a href="{% url 'exercise_sleep' %}" class="btn btn-outline-primary">Sleep tips</a>
-    </div>
+  <p class="text-muted">Short practice exercises to help manage stress and anxiety.</p>
+  <div class="d-flex flex-column gap-2">
+    <a href="{% url 'exercise_breathing' %}" class="btn btn-outline-primary">Breathing exercise</a>
+    <a href="{% url 'exercise_grounding' %}" class="btn btn-outline-primary">Grounding exercise</a>
+    <a href="{% url 'exercise_sleep' %}" class="btn btn-outline-primary">Sleep tips</a>
+  </div>
 </section>
 
-<section class="card p-3">
-    <h2 class="h5 mb-2"> Find Local VA resources (coming very soon)</h2>
-    <p class="text-muted"> Will add a location search powered by google places to show nearby VA and mental health resources, but having technical issues right now. </p>
-    </section>
+<section id="facilities" class="card p-3">
+  <h2 class="h5 mb-2">Find Local VA resources (coming soon)</h2>
+  <p class="text-muted mb-0">We’ll add a location search powered by Google Places to show nearby VA & mental health resources.</p>
+</section>
 {% endblock %}
-

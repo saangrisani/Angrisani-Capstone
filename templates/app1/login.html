@@ -1,19 +1,28 @@
-{% extends "base.html" %}
-{% block title %}Login · Veterans Companion{% endblock %}
+{extends "app1/base.html" %}
+{% load form_extras %}
+{% block title %} Login - Veteran's Companion App {% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-12 col-md-5">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="h4 mb-3">Login</h1>
+        <h1 class="h4 mb-3"> Sign-In</h1>
         <form method="post" novalidate>
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button class="btn btn-primary w-100">Sign in</button>
+          {% crsf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.username.id_for_label}}"Username</label>
+              {{ form.username|add_class:"form-control" }}
+              {% for e in form.username.errors %} <div class="invalid-feedback d-block">{{ e }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" form="{{ form.password.id_for_label}}">Password</label>
+              {{ form.password|add_class:"form-control" }}
+              {% for e in form.password.errors %} <div class="invalid-feedback d-block">{{ e }}</div>
+          </div>
+          <button class="btn btn-primary w-100">Sign In</button>
         </form>
         <p class="text-center mt-3 mb-0">
-          New here? <a href="{% url 'signup' %}">Create an account</a>
-        </p>
+          New around here? <a href="{% url 'signup' }">Create a new account</a>
       </div>
     </div>
   </div>

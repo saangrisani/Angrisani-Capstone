@@ -1,0 +1,20 @@
+{%extends "app1/base.html" %}
+{% block title %}Grounding Exercise - Veteran's Companion App {% endblock %}
+{% block body_class %} bg-exercise{% endblock %}
+
+{% block content %}
+
+<div class="card p-3">
+    <h1 class="h4 mb-3">Grounding tips</h1>
+    <ul class="mb-3">
+        <li>Things you can <strong>see</strong></li>
+        <li>Things you can <strong>feel</strong></li>
+        <li>Things you can <strong>hear</strong></li>
+        <li>Things you can <strong>smell</strong></li>
+        <li>Things you can <strong>taste</strong> (or try to recall a favorite taste)</li> 
+    </ul>
+    <p class="text-muted mb-3">Breathe slowly; say each of these items out loud, or in your head.</p>
+    <a href="{% url 'resources' %}" class="btn btn-outline-primary">Back to resources</a>
+</div>
+
+{% endblock %}

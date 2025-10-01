@@ -1,19 +1,34 @@
-{% extends "base.html" %}
-{% block title %}Sign up · Veterans Mental Health Chat{% endblock %}
+{extends "app1/base.html" %}
+{% load form_extras %}
+{% block title %} Sign-up - Veteran's Companion App {% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-12 col-md-5">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="h4 mb-3">Create account</h1>
+        <h1 class="h4 mb-3"> Sign-In</h1>
         <form method="post" novalidate>
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button class="btn btn-success w-100">Create account</button>
+          {% crsf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.username.id_for_label}}"Username</label>
+              {{ form.username|add_class:"form-control" }}
+              {% for e in form.username.errors %} <div class="invalid-feedback d-block">{{ e }}</div>
+          </div>
+          <div class="mb-3">
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+            {{ form.password1|add_class:"form-control" }}
+            {% for e in form.password1.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+            {{ form.password2|add_class:"form-control" }}
+            {% for e in form.password2.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <button class="btn btn-primary w-100">Create account</button>
         </form>
         <p class="text-center mt-3 mb-0">
-          Already have an account? <a href="{% url 'login' %}">Sign in</a>
-        </p>
+          Already have an account? <a href="{% url 'login' }">Sign-in</a>
       </div>
     </div>
   </div>
