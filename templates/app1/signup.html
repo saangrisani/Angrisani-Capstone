@@ -1,36 +1,92 @@
-{extends "app1/base.html" %}
+{% extends "app1/base.html" %}
 {% load form_extras %}
-{% block title %} Sign-up - Veteran's Companion App {% endblock %}
+{% block title %}Sign Up · Veterans Companion{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-12 col-md-5">
+  <div class="col-12 col-md-6">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="h4 mb-3"> Sign-In</h1>
+        <h1 class="h4 mb-3">Create Account</h1>
+
         <form method="post" novalidate>
-          {% crsf_token %}
+          {% csrf_token %}
+
+          <!-- Username -->
           <div class="mb-3">
-            <label class="form-label" for="{{ form.username.id_for_label}}"Username</label>
-              {{ form.username|add_class:"form-control" }}
-              {% for e in form.username.errors %} <div class="invalid-feedback d-block">{{ e }}</div>
+            <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username|add_class:"form-control" }}
+            {% for e in form.username.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
+
+          <!-- First Name -->
           <div class="mb-3">
+            <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+            {{ form.first_name|add_class:"form-control" }}
+            {% for e in form.first_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Last Name -->
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+            {{ form.last_name|add_class:"form-control" }}
+            {% for e in form.last_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email|add_class:"form-control" }}
+            {% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+
+          <!-- Password -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
             {{ form.password1|add_class:"form-control" }}
+            <div id="password-strength" class="progress mt-2" style="height: 6px;">
+              <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
             {% for e in form.password1.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
+
+          <!-- Confirm Password -->
           <div class="mb-3">
-            <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+            <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
             {{ form.password2|add_class:"form-control" }}
             {% for e in form.password2.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
-          <button class="btn btn-primary w-100">Create account</button>
+
+          <button class="btn btn-success w-100" type="submit">Create Account</button>
         </form>
+
         <p class="text-center mt-3 mb-0">
-          Already have an account? <a href="{% url 'login' }">Sign-in</a>
+          Already have an account? <a href="{% url 'login' %}">Sign in</a>
+        </p>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Password Strength Meter Script -->
+<script>
+const passwordInput = document.getElementById("id_password1");
+const strengthBar = document.querySelector("#password-strength .progress-bar");
+
+passwordInput.addEventListener("input", function() {
+  const val = passwordInput.value;
+  let strength = 0;
+  if (val.length >= 8) strength += 20;
+  if (/[A-Z]/.test(val)) strength += 20;
+  if (/[0-9]/.test(val)) strength += 20;
+  if (/[^A-Za-z0-9]/.test(val)) strength += 20;
+  if (val.length >= 12) strength += 20;
+
+  strengthBar.style.width = strength + "%";
+  strengthBar.className = "progress-bar";
+  if (strength < 40) strengthBar.classList.add("bg-danger");
+  else if (strength < 80) strengthBar.classList.add("bg-warning");
+  else strengthBar.classList.add("bg-success");
+});
+</script>
 {% endblock %}

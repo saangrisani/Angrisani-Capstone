@@ -2,12 +2,26 @@
 {% block title %}User Profile · Veterans Companion App{% endblock %}
 
 {% block content %}
-
 <div class="card p-3 shadow-sm">
   <h1 class="h4 mb-3">User Profile</h1>
-  <p>This page is coming very soon!</p>
-  <p>Username: <strong>{{ request.user.username }}</strong></p>
-  <p>Email: <strong>{{ request.user.email|default:"(not set)" }}</strong></p>
-</div>
 
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Read-only first/last names -->
+    <div class="mb-3">
+      <label class="form-label">First Name</label>
+      <input type="text" class="form-control" value="{{ request.user.first_name }}" disabled>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Last Name</label>
+      <input type="text" class="form-control" value="{{ request.user.last_name }}" disabled>
+    </div>
+
+    <!-- Editable fields (username + email) -->
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Update Profile</button>
+  </form>
+</div>
 {% endblock %}

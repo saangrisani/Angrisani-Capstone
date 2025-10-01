@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from .openai_utility import complete_chat
 
 # custom form
-from django.contrib.auth.forms import CustomUserCreationForm, CustomUserCreationForm
+from .forms import CustomUserCreationForm, UserProfileForm
 # ------------------------- Guardrails: system role + few-shots -------------------------
 SYSTEM_ROLE = """You are a supportive, non-clinical mental health companion for U.S. military veterans and their families.
 
@@ -72,7 +72,7 @@ def signup(request):
 @login_required
 def profile(request):
     if request.method == "POST":
-        form = UserProfileForm(request.POST, instance=request.user)
+        form = UserProfileForm(request.POST, instance=request.user)   
         if form.is_valid():
             form.save()
             dj_messages.success(request, "Profile updated successfully.")
@@ -80,7 +80,7 @@ def profile(request):
     else:
         form = UserProfileForm(instance=request.user)
 
-    return render(request, "app1/profile.html")
+    return render(request, "app1/profile.html", {"form": form})
 
 @require_http_methods(["GET", "POST"])
 @login_required
