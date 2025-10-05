@@ -104,3 +104,19 @@ CSRF_TRUSTED_ORIGINS = [o for o in _csrf_env.split() if o]
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 VA_FACILITIES_API_KEY = os.getenv("VA_FACILITIES_API_KEY", "")
+
+
+try:
+    from dotenv import load_dotenv, find_dotenv
+    # Find .env starting from the current working dir
+    _found = find_dotenv(filename=".env", usecwd=True)
+    if _found:
+        load_dotenv(_found)
+    # Fallback to project base path
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    load_dotenv(BASE_DIR / ".env")
+except Exception:
+    # If python-dotenv isn't installed, we just skip (but you should install it)
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")

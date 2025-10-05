@@ -1,0 +1,122 @@
+<!-- Prefer jsDelivr; falls back to helpful message if blocked -->
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+
+<script>
+(function () {
+  function start() {
+    const mount = document.getElementById('va-react-root');
+    if (!window.React || !window.ReactDOM) {
+      if (mount) {
+        mount.innerHTML =
+          '<div class="alert alert-warning">Couldn’t load React from CDN. Check your network/CSP, or serve React locally from <code>static/js</code>.</div>';
+      }
+      console.error('React/ReactDOM not loaded');
+      return;
+    }
+
+    const e = React.createElement;
+
+    function Card({place}) {
+      const name = place.displayName?.text || "Unknown";
+      const addr = place.formattedAddress || "";
+      const phone = place.nationalPhoneNumber || place.internationalPhoneNumber || "";
+      const lat = place.location?.latitude, lng = place.location?.longitude;
+      const guri = place.googleMapsUri;
+      const mapHref = guri || ((lat && lng) ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : null);
+
+      return e('div', {className:'card mb-3'},
+        e('div', {className:'card-body'},
+          e('h5', {className:'card-title mb-1'}, name),
+          e('div', {className:'small text-muted mb-2'}, addr),
+          phone ? e('div', {className:'mb-2'}, phone) : null,
+          mapHref ? e('a', {href: mapHref, target:'_blank', className:'btn btn-sm btn-outline-primary'}, 'Open in Maps') : null
+        )
+      );
+    }
+
+    function App() {
+      const [place, setPlace] = React.useState('');
+      const [lat, setLat] = React.useState('');
+      const [lng, setLng] = React.useState('');
+      const [radius, setRadius] = React.useState(20000);
+      const [loading, setLoading] = React.useState(false);
+      const [results, setResults] = React.useState([]);
+      const [error, setError] = React.useState('');
+
+      function locate() {
+        setError('');
+        if (!navigator.geolocation) { setError('Geolocation not supported'); return; }
+        navigator.geolocation.getCurrentPosition(
+          pos => { setLat(pos.coords.latitude.toFixed(6)); setLng(pos.coords.longitude.toFixed(6)); },
+          err => setError(err.message)
+        );
+      }
+
+      async function search() {
+        setLoading(true); setError('');
+        try {
+          const params = new URLSearchParams();
+          if (place.trim()) params.append('place', place.trim());
+          if (lat && lng) { params.append('lat', lat); params.append('lng', lng); }
+          params.append('radius', radius);
+          const r = await fetch(`/api/veterans_nearby?${params.toString()}`);
+          const data = await r.json();
+          if (!r.ok) {
+            setError(data.error ? `${data.error}: ${data.details || ''}` : 'Search failed.');
+            setResults([]);
+            return;
+          }
+          setResults(data.results || []);
+        } catch (e) {
+          setError('Search failed. Check server logs.');
+        } finally { setLoading(false); }
+      }
+
+      return e('div', null,
+        // City/State/ZIP row
+        e('div', {className:'row g-2 mb-2'},
+          e('div', {className:'col-12 col-lg-6'},
+            e('input', {
+              className:'form-control',
+              placeholder:'City, State or ZIP (e.g., "Chico, CA" or "95928")',
+              value:place, onChange:ev=>setPlace(ev.target.value)
+            })
+          ),
+        ),
+        // optional lat/lng row
+        e('div', {className:'row g-2 mb-3'},
+          e('div', {className:'col-sm-4'},
+            e('input', {className:'form-control', placeholder:'Latitude (optional)', value:lat, onChange:ev=>setLat(ev.target.value)})
+          ),
+          e('div', {className:'col-sm-4'},
+            e('input', {className:'form-control', placeholder:'Longitude (optional)', value:lng, onChange:ev=>setLng(ev.target.value)})
+          ),
+          e('div', {className:'col-sm-4'},
+            e('select', {className:'form-select', value:radius, onChange:ev=>setRadius(ev.target.value)},
+              e('option', {value:10000}, '10 km'),
+              e('option', {value:20000}, '20 km'),
+              e('option', {value:50000}, '50 km')
+            )
+          )
+        ),
+        e('div', {className:'d-flex gap-2 mb-3'},
+          e('button', {className:'btn btn-outline-secondary', onClick:locate}, 'Use my location'),
+          e('button', {className:'btn btn-primary', onClick:search, disabled:loading}, loading ? 'Searching…' : 'Search Veterans Services')
+        ),
+        error ? e('div', {className:'alert alert-danger'}, error) : null,
+        results.length === 0 && !loading ? e('div', {className:'text-muted'}, 'No results yet.') : null,
+        results.map((p,i)=> e(Card, {place:p, key:i}))
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('va-react-root')).render(e(App));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
+</script>

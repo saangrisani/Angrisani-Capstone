@@ -1,6 +1,7 @@
 # ai_mhbot/views.py
 import math
 import requests
+import os, re
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -132,5 +133,91 @@ def chat(request):
         reply = None
 
     return render(request, "app1/chat.html", {"reply": reply, "user_text": user_text})
+
+    # -------------------------- Veterans Nearby feature --------------------------
+    # --- VA Finder: Google Places (Text Search New) ---
+
+
+VET_REGEX = re.compile(
+    r'\b(va|veterans?|vet\s*center|department of veterans affairs|county veterans service|vfw|american legion|dav|amvets|us\s*vets)\b',
+    re.I
+)
+
+def _filter_veteran_places(places):
+    out = []
+    for p in places or []:
+        name = (p.get("displayName", {}) or {}).get("text", "") or ""
+        addr = p.get("formattedAddress", "") or ""
+        if VET_REGEX.search(f"{name} {addr}"):
+            out.append(p)
+    return out
+
+@require_GET
+def veterans_nearby(request):
+    api_key = os.getenv("GOOGLE_MAPS_API_KEY")
+    if not api_key:
+        return JsonResponse({"results": [], "error": "Missing GOOGLE_MAPS_API_KEY"}, status=500)
+
+    place_str = (request.GET.get("place") or "").strip()
+    lat = request.GET.get("lat")
+    lng = request.GET.get("lng")
+    radius_m = int(request.GET.get("radius", "20000"))
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": (
+            "places.id,places.displayName,places.formattedAddress,places.types,"
+            "places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,"
+            "places.websiteUri,places.googleMapsUri"
+        ),
+    }
+
+    # --- A) If a city/state or ZIP was provided, run a Text Search anchored to that phrase.
+    if place_str:
+        body = {
+            "textQuery": f'(VA OR Veterans OR "Vet Center" OR "American Legion" OR VFW OR DAV) in {place_str}',
+            "pageSize": 20,
+            # No locationBias when textQuery includes an explicit location phrase.
+        }
+        r = requests.post("https://places.googleapis.com/v1/places:searchText",
+                          json=body, headers=headers, timeout=20)
+        if not r.ok:
+            return JsonResponse({"results": [], "error": f"TextSearch {r.status_code}", "details": r.text}, status=502)
+        data = r.json()
+        return JsonResponse({"results": _filter_veteran_places(data.get("places"))})
+
+    # --- B) Otherwise, try Text Search with a location bias (lat/lng path).
+    try:
+        lat_f = float(lat or "0")
+        lng_f = float(lng or "0")
+    except ValueError:
+        return JsonResponse({"results": [], "error": "Invalid lat/lng"}, status=400)
+
+    text_body = {
+        "textQuery": 'VA OR Veterans OR "Vet Center" OR "American Legion" OR VFW OR DAV',
+        "locationBias": {"circle": {"center": {"latitude": lat_f, "longitude": lng_f}, "radius": radius_m}},
+        "pageSize": 20,
+    }
+    t = requests.post("https://places.googleapis.com/v1/places:searchText",
+                      json=text_body, headers=headers, timeout=20)
+    if not t.ok:
+        return JsonResponse({"results": [], "error": f"TextSearch {t.status_code}", "details": t.text}, status=502)
+    t_data = t.json()
+    t_filtered = _filter_veteran_places(t_data.get("places"))
+    if t_filtered:
+        return JsonResponse({"results": t_filtered})
+
+    # Optional Nearby fallback if Text Search came up empty
+    nearby_body = {
+        "includedTypes": ["hospital","doctor","physiotherapist","local_government_office","point_of_interest"],
+        "maxResultCount": 20,
+        "locationRestriction": {"circle": {"center": {"latitude": lat_f, "longitude": lng_f}, "radius": radius_m}},
+    }
+    n = requests.post("https://places.googleapis.com/v1/places:searchNearby",
+                      json=nearby_body, headers=headers, timeout=20)
+    if not n.ok:
+        return JsonResponse({"results": [], "error": f"NearbySearch {n.status_code}", "details": n.text}, status=502)
+    return JsonResponse({"results": _filter_veteran_places(n.json().get("places"))})
 
 

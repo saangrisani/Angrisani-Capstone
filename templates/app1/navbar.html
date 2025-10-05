@@ -3,6 +3,7 @@
   <a href="{% url 'chat' %}">Chat</a>
   <a href="{% url 'about' %}">About</a>
   <a href="{% url 'resources' %}">Resources</a>
+  <a href="{% url 'vets_page' %}">VA Finder</a>
   <span style="margin-left:auto">
     {% if user.is_authenticated %}
       Hi, {{ user.username }} · 

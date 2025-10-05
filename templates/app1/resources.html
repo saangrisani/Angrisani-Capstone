@@ -28,7 +28,12 @@
 </section>
 
 <section id="facilities" class="card p-3">
-  <h2 class="h5 mb-2">Find Local VA resources (coming soon)</h2>
-  <p class="text-muted mb-0">We’ll add a location search powered by Google Places to show nearby VA & mental health resources.</p>
+<div class="card mb-3 position-relative">
+  <div class="card-body">
+    <h5 class="card-title">Find Local VA resources</h5>
+    <p class="card-text text-muted">Use our location search to see nearby VA & mental health resources.</p>
+    <a href="{% url 'vets_page' %}" class="stretched-link">Open VA Finder</a>
+  </div>
+</div>
 </section>
 {% endblock %}
