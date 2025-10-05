@@ -1,8 +1,5 @@
 # ai_mhbot/views.py
-import math
-import requests
-import os, re
-
+import os, re, math, requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login
@@ -12,9 +9,8 @@ from django.views.decorators.http import require_http_methods, require_GET
 from django.http import JsonResponse
 
 from .openai_utility import complete_chat
-
-# custom form
 from .forms import CustomUserCreationForm, UserProfileForm
+
 # ------------------------- Guardrails: system role + few-shots -------------------------
 SYSTEM_ROLE = """You are a supportive, non-clinical mental health companion for U.S. military veterans and their families.
 
@@ -36,26 +32,13 @@ FEW_SHOTS = [
 ]
 
 # ------------------------- Public pages -------------------------
-def home(request):
-    return render(request, "app1/home.html")
-
-def about(request):
-    return render(request, "app1/about.html")
-
-def resources(request):
-    return render(request, "app1/resources.html")
-
-def feedback(request):
-    return render(request, "app1/feedback.html")
-
-def exercise_breathing(request):
-    return render(request, "app1/exercise_breathing.html")
-
-def exercise_grounding(request):
-    return render(request, "app1/exercise_grounding.html")
-
-def exercise_sleep(request):
-    return render(request, "app1/exercise_sleep.html")
+def home(request): return render(request, "app1/home.html")
+def about(request): return render(request, "app1/about.html")
+def resources(request): return render(request, "app1/resources.html")
+def feedback(request): return render(request, "app1/feedback.html")
+def exercise_breathing(request): return render(request, "app1/exercise_breathing.html")
+def exercise_grounding(request): return render(request, "app1/exercise_grounding.html")
+def exercise_sleep(request): return render(request, "app1/exercise_sleep.html")
 
 # -------------------------- Auth / account pages --------------------------
 def signup(request):
@@ -73,14 +56,13 @@ def signup(request):
 @login_required
 def profile(request):
     if request.method == "POST":
-        form = UserProfileForm(request.POST, instance=request.user)   
+        form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             dj_messages.success(request, "Profile updated successfully.")
             return redirect("profile")
     else:
         form = UserProfileForm(instance=request.user)
-
     return render(request, "app1/profile.html", {"form": form})
 
 @require_http_methods(["GET", "POST"])
@@ -89,7 +71,7 @@ def chat(request):
     if request.method == "GET":
         return render(request, "app1/chat.html")
 
-    # Accept several input names: message, text, prompt, content
+    # Accept several input names
     for key in ("message", "text", "prompt", "content"):
         user_text = request.POST.get(key)
         if user_text:
@@ -102,9 +84,7 @@ def chat(request):
         dj_messages.error(request, "Please tell me what I can help with today to serve your mental health needs.")
         return render(request, "app1/chat.html", {"reply": None})
 
-    payload = [{"role": "system", "content": SYSTEM_ROLE}] + FEW_SHOTS + [
-        {"role": "user", "content": user_text}
-    ]
+    payload = [{"role": "system", "content": SYSTEM_ROLE}] + FEW_SHOTS + [{"role": "user", "content": user_text}]
 
     try:
         raw = complete_chat(payload)
@@ -134,10 +114,7 @@ def chat(request):
 
     return render(request, "app1/chat.html", {"reply": reply, "user_text": user_text})
 
-    # -------------------------- Veterans Nearby feature --------------------------
-    # --- VA Finder: Google Places (Text Search New) ---
-
-
+# -------------------------- Veterans Nearby (Google Places Text Search New) --------------------------
 VET_REGEX = re.compile(
     r'\b(va|veterans?|vet\s*center|department of veterans affairs|county veterans service|vfw|american legion|dav|amvets|us\s*vets)\b',
     re.I
@@ -154,9 +131,10 @@ def _filter_veteran_places(places):
 
 @require_GET
 def veterans_nearby(request):
-    api_key = os.getenv("GOOGLE_MAPS_API_KEY")
+    api_key = settings.GOOGLE_MAPS_API_KEY or os.getenv("GOOGLE_MAPS_API_KEY", "")
     if not api_key:
-        return JsonResponse({"results": [], "error": "Missing GOOGLE_MAPS_API_KEY"}, status=500)
+        # 200 with a friendly error keeps the demo smooth
+        return JsonResponse({"results": [], "error": "Missing GOOGLE_MAPS_API_KEY"}, status=200)
 
     place_str = (request.GET.get("place") or "").strip()
     lat = request.GET.get("lat")
@@ -173,51 +151,31 @@ def veterans_nearby(request):
         ),
     }
 
-    # --- A) If a city/state or ZIP was provided, run a Text Search anchored to that phrase.
+    # Prefer a textual place, e.g., "Chico, CA" or "95928"
     if place_str:
         body = {
             "textQuery": f'(VA OR Veterans OR "Vet Center" OR "American Legion" OR VFW OR DAV) in {place_str}',
-            "pageSize": 20,
-            # No locationBias when textQuery includes an explicit location phrase.
+            "pageSize": 20
         }
         r = requests.post("https://places.googleapis.com/v1/places:searchText",
                           json=body, headers=headers, timeout=20)
         if not r.ok:
-            return JsonResponse({"results": [], "error": f"TextSearch {r.status_code}", "details": r.text}, status=502)
-        data = r.json()
-        return JsonResponse({"results": _filter_veteran_places(data.get("places"))})
+            return JsonResponse({"results": [], "error": f"TextSearch {r.status_code}", "details": r.text}, status=200)
+        return JsonResponse({"results": _filter_veteran_places(r.json().get("places"))})
 
-    # --- B) Otherwise, try Text Search with a location bias (lat/lng path).
+    # Fallback: lat/lng bias
     try:
         lat_f = float(lat or "0")
         lng_f = float(lng or "0")
     except ValueError:
-        return JsonResponse({"results": [], "error": "Invalid lat/lng"}, status=400)
+        return JsonResponse({"results": [], "error": "Invalid lat/lng"}, status=200)
 
-    text_body = {
+    body = {
         "textQuery": 'VA OR Veterans OR "Vet Center" OR "American Legion" OR VFW OR DAV',
         "locationBias": {"circle": {"center": {"latitude": lat_f, "longitude": lng_f}, "radius": radius_m}},
         "pageSize": 20,
     }
-    t = requests.post("https://places.googleapis.com/v1/places:searchText",
-                      json=text_body, headers=headers, timeout=20)
-    if not t.ok:
-        return JsonResponse({"results": [], "error": f"TextSearch {t.status_code}", "details": t.text}, status=502)
-    t_data = t.json()
-    t_filtered = _filter_veteran_places(t_data.get("places"))
-    if t_filtered:
-        return JsonResponse({"results": t_filtered})
-
-    # Optional Nearby fallback if Text Search came up empty
-    nearby_body = {
-        "includedTypes": ["hospital","doctor","physiotherapist","local_government_office","point_of_interest"],
-        "maxResultCount": 20,
-        "locationRestriction": {"circle": {"center": {"latitude": lat_f, "longitude": lng_f}, "radius": radius_m}},
-    }
-    n = requests.post("https://places.googleapis.com/v1/places:searchNearby",
-                      json=nearby_body, headers=headers, timeout=20)
-    if not n.ok:
-        return JsonResponse({"results": [], "error": f"NearbySearch {n.status_code}", "details": n.text}, status=502)
-    return JsonResponse({"results": _filter_veteran_places(n.json().get("places"))})
-
-
+    r = requests.post("https://places.googleapis.com/v1/places:searchText",
+                      json=body, headers=headers, timeout=20)
+    if not r.ok:
+        return

@@ -1,21 +1,35 @@
 # Angrisani-Capstone
-repo for my capstone design for 2025 fall with Matt Hill
-## What’s Implemented
-- Django project `Vet_Mh` with app `ai_mhbot`
-- Pages: Home, Chat, About, Resources; auth (login/signup/logout)
-- Shared navbar include
-- OpenAI chat helper (`ai_mhbot/openai_utility.py`) reading `OPENAI_API_KEY` /
-`OPENAI_MODEL`
-## Quickstart
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-## OpenAI Test
-python manage.py shell -c "import os,django;
-os.environ.setdefault('DJANGO_SETTINGS_MODULE','Vet_Mh.settings');
-django.setup(); from ai_mhbot.openai_utility import complete_chat;
-print(complete_chat([{'role':'user','content':'Say hi in one short sentence.'}],
-model=os.getenv('OPENAI_MODEL')))"
-## Env
-- `OPENAI_API_KEY`, `OPENAI_MODEL`
-- `SECRET_KEY`, `ALLOWED_HOSTS`
+
+**Veterans Mental Health Companion**  
+Capstone design project for **Fall 2025** with *Matt Hill*  
+Author: **Sean Angrisani**
+
+---
+
+##  Overview
+This Django-based web application, **Vet_Mh**, provides an AI-powered chat assistant for U.S. veterans.  
+It includes pages for **Home**, **Chat**, **About**, and **Resources**, with secure user authentication (sign up, login, logout).  
+The chatbot uses the **OpenAI API** to provide supportive and resource-driven responses.
+
+---
+
+## ⚙️ What’s Implemented
+- Django project: `Vet_Mh`
+- App: `ai_mhbot`
+- Pages:
+  - `/` → Home  
+  - `/chat/` → AI Chatbot  
+  - `/about/` → About page  
+  - `/resources/` → Veteran resource links
+- Shared **Bootstrap-based Navbar**
+- **Auth System:** register/login/logout
+- **OpenAI Chat Integration:** handled in `ai_mhbot/openai_utility.py`  
+  Uses environment variables for secure key loading.
+
+---
+
+##  Quickstart (Local Setup)
+### 1. Clone the Repository
+```bash
+git clone https://github.com/SeanAngrisani/Angrisani-Capstone.git
+cd Angrisani-Capstone

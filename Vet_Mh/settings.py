@@ -1,11 +1,13 @@
 # Vet_Mh/settings.py
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load .env from project root (folder with manage.py)
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=BASE_DIR / ".env")
+_found = find_dotenv(filename=".env", usecwd=True)
+load_dotenv(_found or (BASE_DIR / ".env"))
 
 # --- Core ---
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
@@ -22,7 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "ai_mhbot",  # your app
+    "ai_mhbot",
 ]
 
 MIDDLEWARE = [
@@ -93,30 +95,14 @@ SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-# CSRF trusted origins: space-separated env, with sane defaults
 _csrf_env = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
     "http://localhost:8000 http://127.0.0.1:8000 https://*.app.github.dev https://*.githubpreview.dev",
 )
 CSRF_TRUSTED_ORIGINS = [o for o in _csrf_env.split() if o]
 
-# --- API keys from .env ---
+# --- API keys / config from .env ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 VA_FACILITIES_API_KEY = os.getenv("VA_FACILITIES_API_KEY", "")
-
-
-try:
-    from dotenv import load_dotenv, find_dotenv
-    # Find .env starting from the current working dir
-    _found = find_dotenv(filename=".env", usecwd=True)
-    if _found:
-        load_dotenv(_found)
-    # Fallback to project base path
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    load_dotenv(BASE_DIR / ".env")
-except Exception:
-    # If python-dotenv isn't installed, we just skip (but you should install it)
-    BASE_DIR = Path(__file__).resolve().parent.parent
-
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
