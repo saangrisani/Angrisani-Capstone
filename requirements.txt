@@ -1,3 +1,20 @@
-Django>=4.2,<5.1
-requests>=2.31.0
-python-dotenv>=1.0.1
+# Core
+Django==5.0.14
+djangorestframework==3.15.2
+
+# CORS for React ↔ Django
+django-cors-headers==4.4.0
+
+# Env + HTTP
+python-dotenv==1.0.1
+requests==2.32.3
+
+# OpenAI SDK (for your chat features)
+openai==1.51.2
+
+# Static files (nice for quick reviews) + WSGI server (if they try prod-like run)
+whitenoise==6.7.0
+gunicorn==21.2.0
+
+# (Optional) Only if you switch from SQLite to Postgres:
+# psycopg2-binary==2.9.9

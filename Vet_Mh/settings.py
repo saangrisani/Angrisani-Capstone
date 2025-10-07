@@ -95,14 +95,19 @@ SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-_csrf_env = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    "http://localhost:8000 http://127.0.0.1:8000 https://*.app.github.dev https://*.githubpreview.dev",
-)
-CSRF_TRUSTED_ORIGINS = [o for o in _csrf_env.split() if o]
+# Hosts
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+
+# CSRF trusted origins (both http and https for localhost)
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "https://127.0.0.1:8000",
+    "https://localhost:8000",
+]
 
 # --- API keys / config from .env ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 VA_FACILITIES_API_KEY = os.getenv("VA_FACILITIES_API_KEY", "")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
