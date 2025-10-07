@@ -1,5 +1,6 @@
 # ai_mhbot/views.py
 import os, re, math, requests
+from openai import OpenAI
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as auth_login
@@ -129,6 +130,17 @@ def _filter_veteran_places(places):
             out.append(p)
     return out
 
+
+@require_GET
+def openai_health(request):
+    try:
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        models = client.models.list()
+        return JsonResponse({"ok": True, "models_count": len(models.data), "model": settings.OPENAI_MODEL})
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e), "has_key": bool(settings.OPENAI_API_KEY),
+                             "model": settings.OPENAI_MODEL}, status=500)
+
 @require_GET
 def veterans_nearby(request):
     api_key = settings.GOOGLE_MAPS_API_KEY or os.getenv("GOOGLE_MAPS_API_KEY", "")
@@ -151,7 +163,7 @@ def veterans_nearby(request):
         ),
     }
 
-    # Prefer a textual place, e.g., "Chico, CA" or "95928"
+    
     if place_str:
         body = {
             "textQuery": f'(VA OR Veterans OR "Vet Center" OR "American Legion" OR VFW OR DAV) in {place_str}',

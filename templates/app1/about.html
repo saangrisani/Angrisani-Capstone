@@ -1,36 +1,46 @@
 {% extends "app1/base.html" %}
 {% load static %}
+
 {% block title %}About · Veterans Companion{% endblock %}
-{% block body_class %}about{% endblock %}
+{% block body_class %}site-bg about{% endblock %}
+
+{# same bg treatment as Home #}
+{% block head_extra %}
+  <link rel="preload" as="image" href="{% static 'images/sadvet.jpg' %}" fetchpriority="high">
+{% endblock %}
 
 {% block page_bg %}
-
   <div class="bg-layer" aria-hidden="true">
-    <img src="{% static 'images/mh1.jpg' %}" alt="" loading="eager">
+    <img src="{% static 'images/sadvet.jpg' %}" alt="" loading="eager"
+         style="position:absolute;width:100%;height:18vh;top:7vh;object-fit:cover;object-position:center;">
   </div>
-  <div class="bg-overlay" aria-hidden="true" style="background: rgba(0,0,0,.10)"></div>
-
+  <div class="bg-overlay" aria-hidden="true"></div>
 {% endblock %}
 
 {% block content %}
-
-  <h1 class="h3 mb-3">About Veterans Companion</h1>
-  <p class="lead">Veterans Companion is a student capstone project designed to help Veterans and families quickly find mental-health resources, facilities, and practical self-help tools.</p>
+  <h1 class="h3 mb-3 text-light">About Veterans Companion</h1>
+  <p class="lead text-light opacity-75">
+    Veterans Companion is a student capstone project designed to help Veterans and families quickly find
+    mental-health resources, facilities, and practical self-help tools.
+  </p>
 
   <div class="row g-3 mt-1">
     <div class="col-md-6">
       <div class="card card-fun h-100">
         <div class="card-body">
-          <h5 class="card-title">Our Mission</h5>
-          <p class="mb-0">Make it easier to discover VA and community care, understand benefits, and take simple steps toward better well-being—without the maze of tabs and forms.</p>
+          <h5 class="card-title text-light">Our Mission</h5>
+          <p class="mb-0 text-light opacity-75">
+            Make it easier to discover VA and community care, understand benefits, and take simple steps toward
+            better well-being—without the maze of tabs and forms.
+          </p>
         </div>
       </div>
     </div>
     <div class="col-md-6">
       <div class="card card-fun h-100">
         <div class="card-body">
-          <h5 class="card-title">What This Is / Isn’t</h5>
-          <ul class="mb-0">
+          <h5 class="card-title text-light">What This Is / Isn’t</h5>
+          <ul class="mb-0 text-light opacity-85">
             <li>✅ A guide to resources and helpful tools.</li>
             <li>✅ A way to locate nearby VA facilities.</li>
             <li>❌ Not medical advice; not a crisis service.</li>
@@ -41,8 +51,13 @@
     </div>
   </div>
 
-  <h2 id="privacy" class="h5 mt-4">Privacy Policy (Summary)</h2>
-  <p>This site does not store personal data beyond what is needed for authentication and basic operation. Chat messages are processed by an AI service but are not stored.</p>
-  <p>If you have questions, <a href="mailto:saangrisani@csuchico.edu">contact the developer</a>. This is a student project and not affiliated with the U.S. Department of Veterans Affairs.</p>
-  
+  <h2 id="privacy" class="h5 mt-4 text-light">Privacy Policy (Summary)</h2>
+  <p class="text-light opacity-75">
+    This site does not store personal data beyond what is needed for authentication and basic operation.
+    Chat messages are processed by an AI service but are not stored.
+  </p>
+  <p class="text-light opacity-75">
+    Questions? <a class="link-light" href="mailto:saangrisani@csuchico.edu">Contact the developer</a>.
+    This is a student project and not affiliated with the U.S. Department of Veterans Affairs.
+  </p>
 {% endblock %}
