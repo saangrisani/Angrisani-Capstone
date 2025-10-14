@@ -85,7 +85,7 @@ def complete_chat(
             text = str(e).lower()
             if "insufficient_quota" in text or "check your plan and billing" in text:
                 return (
-                    "⚠️ I can’t reach the AI service because this project has no available credit. "
+                    " I can’t reach the AI service because this project has no available credit. "
                     "I’m still here to listen and offer general support."
                 )
             last_exc = e
@@ -100,7 +100,7 @@ def complete_chat(
                 text = (getattr(e, "message", "") or str(e)).lower()
                 if "insufficient_quota" in text:
                     return (
-                        "⚠️ I can’t reach the AI service because this project has no available credit. "
+                        " I can’t reach the AI service because this project has no available credit. "
                         "I’m still here to listen and offer general support."
                     )
                 last_exc = e
@@ -117,7 +117,7 @@ def complete_chat(
             break
 
     return (
-        "⚠️ Im having trouble contacting the AI service right now. "
+        " Im having trouble contacting the AI service right now. "
         "If youre in crisis, call 988 (Press 1). Otherwise, Im listening—"
         "tell me a bit more about whats going on."
     )

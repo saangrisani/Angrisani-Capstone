@@ -1,35 +1,38 @@
-# Angrisani-Capstone
+Quickstart
 
-**Veterans Mental Health Companion**  
-Capstone design project for **Fall 2025** with *Matt Hill*  
-Author: **Sean Angrisani**
+1) Clone
 
----
+git clone <repo-url> && cd Angrisani-Capstone
 
-##  Overview
-This Django-based web application, **Vet_Mh**, provides an AI-powered chat assistant for U.S. veterans.  
-It includes pages for **Home**, **Chat**, **About**, and **Resources**, with secure user authentication (sign up, login, logout).  
-The chatbot uses the **OpenAI API** to provide supportive and resource-driven responses.
 
----
+2) Create .env (no quotes)
 
-## ⚙️ What’s Implemented
-- Django project: `Vet_Mh`
-- App: `ai_mhbot`
-- Pages:
-  - `/` → Home  
-  - `/chat/` → AI Chatbot  
-  - `/about/` → About page  
-  - `/resources/` → Veteran resource links
-- Shared **Bootstrap-based Navbar**
-- **Auth System:** register/login/logout
-- **OpenAI Chat Integration:** handled in `ai_mhbot/openai_utility.py`  
-  Uses environment variables for secure key loading.
+DJANGO_SETTINGS_MODULE=Vet_Mh.settings
+DJANGO_SECRET_KEY=change-me
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000 http://127.0.0.1:8000
 
----
+OPENAI_API_KEY=sk-XXXXXXXX
+OPENAI_MODEL=chatgpt-4o-latest
+GOOGLE_MAPS_API_KEY=AIzaSyXXXXXXXX
 
-##  Quickstart (Local Setup)
-### 1. Clone the Repository
-```bash
-git clone https://github.com/SeanAngrisani/Angrisani-Capstone.git
-cd Angrisani-Capstone
+
+3) Local run
+
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+# open http://127.0.0.1:8000
+
+
+4) Docker run
+
+docker build -t capstone:local .
+docker run --rm --name capstone \
+  -p 8090:8080 \
+  --env-file .env \
+  -e DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1" \
+  -e CSRF_TRUSTED_ORIGINS="http://localhost:8090 https://localhost:8090 http://127.0.0.1:8090 https://127.0.0.1:8090" \
+  capstone:local
+# open http://localhost:8090

@@ -2,35 +2,29 @@
 {% block title %}Chat · Veterans Companion{% endblock %}
 
 {% block content %}
+<!-- Heads-up banner (scope + crisis info) -->
 <div class="alert alert-warning border shadow-sm">
   <strong>Important:</strong> Emotional support only — <em>Not medical or legal advice</em>.
   In crisis, call <strong>988 (Press 1)</strong>.
 </div>
 
-{% if messages %}
-  <div class="mt-2">
-    {% for m in messages %}
-      <div class="alert {% if m.tags %}alert-{{ m.tags }}{% else %}alert-info{% endif %}">{{ m }}</div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-<form method="post" action="{% url 'chat' %}" class="card p-3 shadow-sm mt-2" autocomplete="off">
+<!-- User input form -->
+<form method="post" action="{% url 'chat' %}" class="card p-3 shadow-sm mt-2">
   {% csrf_token %}
   <label for="id_message" class="form-label">Your message</label>
   <textarea id="id_message" name="message" rows="3" class="form-control" required>{{ user_text|default_if_none:"" }}</textarea>
-  <div class="mt-2 d-flex gap-2">
-    <button type="submit" class="btn btn-primary">Send</button>
-    <a href="{% url 'chat' %}" class="btn btn-outline-secondary">Refresh</a>
-  </div>
+  <button type="submit" class="btn btn-primary mt-2">Send</button>
 </form>
 
-{% if reply %}
-  <div class="card mt-3 shadow-sm">
-    <div class="card-body">
-      <strong>Assistant:</strong>
-      <div class="mt-2">{{ reply|linebreaks }}</div>
+<!-- Assistant panel (always visible)
+     - If there's no reply yet, we show a default friendly message.
+     ChatGPT help ------Added default reply + kept safe rendering to prevent XSS. -->
+<div class="card mt-3 shadow-sm">
+  <div class="card-body">
+    <strong>Assistant:</strong>
+    <div class="mt-2">
+      {{ reply|default:"No response yet — type a message and press Send to start a conversation."|linebreaks }}
     </div>
   </div>
-{% endif %}
+</div>
 {% endblock %}

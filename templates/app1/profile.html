@@ -11,16 +11,21 @@
     <!-- Read-only first/last names -->
     <div class="mb-3">
       <label class="form-label">First Name</label>
-      <input type="text" class="form-control" value="{{ request.user.first_name }}" disabled>
+      <input type="text" class="form-control" value="{{ user.first_name }}" >
     </div>
     <div class="mb-3">
       <label class="form-label">Last Name</label>
-      <input type="text" class="form-control" value="{{ request.user.last_name }}" disabled>
+      <input type="text" class="form-control" value="{{ user.last_name }}" >
     </div>
-
-    <!-- Editable fields (username + email) -->
-    {{ form.as_p }}
-
+    <!-- Editable email -->
+    <div class="mb-3">
+      <label class="form-label">Email Address</label>
+      <input type="email" name="email" class="form-control" value="{{ user.email }}" >
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Phone Number</label>
+      <input type="text" name="phone" class="form-control" value="{{ profile.phone }}" >
+    </div>
     <button type="submit" class="btn btn-primary">Update Profile</button>
   </form>
 </div>

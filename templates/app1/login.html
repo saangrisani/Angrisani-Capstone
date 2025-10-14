@@ -9,32 +9,33 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <h1 class="h4 mb-3">Sign In</h1>
-        <form method="post" novalidate>
+
+        {# ChatGPT help – 2025-10-14: show all errors once at the top, keep the rest simple #}
+        {% if form.non_field_errors or form.errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+            {% if form.errors %}Please check your username/password and try again.{% endif %}
+          </div>
+        {% endif %}
+
+        <form method="post">
           {% csrf_token %}
-          
-          <!-- Username -->
+
           <div class="mb-3">
             <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
             {{ form.username|add_class:"form-control" }}
-            {% for e in form.username.errors %}
-              <div class="invalid-feedback d-block">{{ e }}</div>
-            {% endfor %}
           </div>
 
-          <!-- Password -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
             {{ form.password|add_class:"form-control" }}
-            {% for e in form.password.errors %}
-              <div class="invalid-feedback d-block">{{ e }}</div>
-            {% endfor %}
           </div>
 
           <button class="btn btn-primary w-100" type="submit">Sign In</button>
         </form>
 
         <p class="text-center mt-3 mb-0">
-          New around here? <a href="{% url 'signup' %}">Create a new account</a>
+          New here? <a href="{% url 'signup' %}">Create an account</a>
         </p>
       </div>
     </div>

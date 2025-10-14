@@ -3,18 +3,6 @@
 {% block title %}Home · Veterans Companion{% endblock %}
 {% block body_class %}site-bg bg-home{% endblock %}
 
-{% block head_extra %}
-  <link rel="preload" as="image" href="{% static 'images/sadvet.jpg' %}" fetchpriority="high">
-{% endblock %}
-
-{% block page_bg %}
-  <div class="bg-layer" aria-hidden="true">
-    <img src="{% static 'images/sadvet.jpg' %}" alt="" loading="eager"
-         style="position:absolute;width:100%;height:18vh;top:7vh;object-fit:cover;object-position:center;">
-  </div>
-  <div class="bg-overlay" aria-hidden="true"></div>
-{% endblock %}
-
 {% block content %}
 <div class="hero-card p-4">
   <h1 class="h4 mb-2">Welcome to the Veterans Mental Health Assistance Page</h1>
@@ -31,7 +19,7 @@
         <div class="card-body">
           <h5 class="card-title">Open Chat</h5>
           <p class="text-muted">Ask questions or get guided help.</p>
-          <a class="btn btn-fun" href="{% url 'chat' %}">Start Chat</a>
+            <a class="btn btn-outline-light" href="{% url 'chat' %}">Start Chat</a>
         </div>
       </div>
     </div>
@@ -40,21 +28,19 @@
         <div class="card-body">
           <h5 class="card-title">Find Facilities</h5>
           <p class="text-muted">Search nearby VA care and services.</p>
-          <a class="btn btn-outline-light" href="{% url 'resources' %}#facilities">Search</a>
+          <a class="btn btn-outline-light" href="{% url 'vets_page' %}">Search</a>
         </div>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card card-fun h-100">
         <div class="card-body">
-          <h5 class="card-title">Benefits & Claims</h5>
-          <p class="text-muted">Start exploring options and guides.</p>
-          <a class="btn btn-outline-light" href="{% url 'resources' %}#benefits">View Guides</a>
+          <h5 class="card-title">Mental Health Exercises, Hotlines, and Links</h5>
+          <p class="text-muted">Start exploring xercises and guides.</p>
+          <a class="btn btn-outline-light" href="{% url 'resources' %}">View Resources</a>
         </div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- keep your other sections; they'll inherit the dark theme nicely -->
 {% endblock %}

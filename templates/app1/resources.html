@@ -1,39 +1,75 @@
+{# templates/app1/resources.html #}
 {% extends "app1/base.html" %}
-{% block title %}Breathing Exercise - Veteran's Companion App {% endblock %}
-{% block body_class %}bg-resources{% endblock %}
+{% load static %}
+
+{# Fixed title (was “Breathing Exercise”) #}
+{% block title %}Resources – Veteran's Companion App{% endblock %}
+
+{# Ensure dark theme + allow page-specific tweaks via bg-resources #}
+{% block body_class %}site-bg bg-resources{% endblock %}
+
+{% block head_extra %}
+  {# Keep hero image snappy #}
+  <link rel="preload" as="image" href="{% static 'images/sadvet.jpg' %}" fetchpriority="high">
+
+  <style>
+    /* Added by ChatGPT (Oct 9, 2025): Darken the entire page background a bit more */
+    body.site-bg.bg-resources { --overlay-alpha: .62; } /* tune .55–.75 */
+
+    /* Keep hero strip readable (your 18vh banner) */
+    .bg-overlay{
+      position:absolute; inset:0; z-index:0;
+      background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.78));
+    }
+
+    /* Make sure content sits over background layers */
+    main.container{ position:relative; z-index:1; }
+  </style>
+{% endblock %}
+
+{% block page_bg %}
+  <div class="bg-layer" aria-hidden="true">
+    <img src="{% static 'images/sadvet.jpg' %}" alt="" loading="eager"
+         style="position:absolute;width:100%;height:18vh;top:7vh;object-fit:cover;object-position:center;">
+  </div>
+  <div class="bg-overlay" aria-hidden="true"></div>
+{% endblock %}
 
 {% block content %}
-<section class="card p-3 mb-4">
+
+<section class="card card-fun p-3 mb-4">
   <h1 class="h4 mb-3">Resources</h1>
   <p class="text-muted">
     Helpful links for support. In an emergency, call <strong>988 (Press 1)</strong>, text <strong>838255</strong>, or
-    visit <a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">veteranscrisisline.net</a>.
+    visit <a class="link-light" href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">veteranscrisisline.net</a>.
   </p>
   <ul class="mb-0">
-    <li><a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">Veterans Crisis Line</a></li>
-    <li><a href="https://www.mentalhealth.va.gov/" target="_blank" rel="noopener">VA Mental Health</a></li>
-    <li><a href="https://www.ptsd.va.gov/" target="_blank" rel="noopener">PTSD: National Center for PTSD</a></li>
-    <li><a href="https://www.vetcenter.va.gov/" target="_blank" rel="noopener">Vet Center</a></li>
+    <li><a class="link-light" href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener">Veterans Crisis Line</a></li>
+    <li><a class="link-light" href="https://www.mentalhealth.va.gov/" target="_blank" rel="noopener">VA Mental Health</a></li>
+    <li><a class="link-light" href="https://www.ptsd.va.gov/" target="_blank" rel="noopener">PTSD: National Center for PTSD</a></li>
+    <li><a class="link-light" href="https://www.vetcenter.va.gov/" target="_blank" rel="noopener">Vet Center</a></li>
   </ul>
 </section>
 
-<section class="card p-3 mb-4">
+<section class="card card-fun p-3 mb-4">
   <h2 class="h5 mb-3">Quick exercises</h2>
   <p class="text-muted">Short practice exercises to help manage stress and anxiety.</p>
   <div class="d-flex flex-column gap-2">
-    <a href="{% url 'exercise_breathing' %}" class="btn btn-outline-primary">Breathing exercise</a>
-    <a href="{% url 'exercise_grounding' %}" class="btn btn-outline-primary">Grounding exercise</a>
-    <a href="{% url 'exercise_sleep' %}" class="btn btn-outline-primary">Sleep tips</a>
+    {# Switched to outline-light for dark backgrounds (readability) #}
+    <a href="{% url 'exercise_breathing' %}" class="btn btn-outline-light">Breathing exercise</a>
+    <a href="{% url 'exercise_grounding' %}" class="btn btn-outline-light">Grounding exercise</a>
+    <a href="{% url 'exercise_sleep' %}" class="btn btn-outline-light">Sleep tips</a>
   </div>
 </section>
 
-<section id="facilities" class="card p-3">
-<div class="card mb-3 position-relative">
-  <div class="card-body">
-    <h5 class="card-title">Find Local VA resources</h5>
-    <p class="card-text text-muted">Use our location search to see nearby VA & mental health resources.</p>
-    <a href="{% url 'vets_page' %}" class="stretched-link">Open VA Finder</a>
+<section id="facilities" class="card card-fun p-3">
+  <div class="position-relative">
+    <div class="card-body p-0">
+      <h5 class="card-title">Find Local VA resources</h5>
+      <p class="text-muted mb-2">Use our location search to see nearby VA & mental health resources.</p>
+      <a href="{% url 'vets_page' %}" class="stretched-link link-light">Open VA Finder</a>
+    </div>
   </div>
-</div>
 </section>
+
 {% endblock %}

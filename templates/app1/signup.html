@@ -9,52 +9,42 @@
       <div class="card-body">
         <h1 class="h4 mb-3">Create Account</h1>
 
-        <form method="post" novalidate>
+        <form method="post">
           {% csrf_token %}
 
-          <!-- Username -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
             {{ form.username|add_class:"form-control" }}
-            {% for e in form.username.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
 
-          <!-- First Name -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
             {{ form.first_name|add_class:"form-control" }}
-            {% for e in form.first_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
 
-          <!-- Last Name -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
             {{ form.last_name|add_class:"form-control" }}
-            {% for e in form.last_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
 
-          <!-- Email -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
             {{ form.email|add_class:"form-control" }}
-            {% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
 
-          <!-- Password -->
+          {# password (zxcvbn meter below); server still validates everything #}
           <div class="mb-3">
             <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
             {{ form.password1|add_class:"form-control" }}
-            <div id="password-strength" class="progress mt-2" style="height: 6px;">
-              <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            <div class="progress mt-2" style="height:6px;">
+              <div id="pw-bar" class="progress-bar" role="progressbar" style="width:0%;"></div>
             </div>
-            {% for e in form.password1.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            <small id="pw-label" class="text-muted">Strength: —</small>
           </div>
 
-          <!-- Confirm Password -->
           <div class="mb-3">
             <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
             {{ form.password2|add_class:"form-control" }}
-            {% for e in form.password2.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
           </div>
 
           <button class="btn btn-success w-100" type="submit">Create Account</button>
@@ -68,25 +58,34 @@
   </div>
 </div>
 
-<!-- Password Strength Meter Script -->
+{# Password strength meter using zxcvbn (Dropbox).
+   Source: https://github.com/dropbox/zxcvbn
+   CDN:    https://cdnjs.com/libraries/zxcvbn
+   also used gpt to help clarify #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js" crossorigin="anonymous"></script>
 <script>
-const passwordInput = document.getElementById("id_password1");
-const strengthBar = document.querySelector("#password-strength .progress-bar");
+  // simple: read password1 field, score with zxcvbn, update bar/label
+  (function () {
+    var input = document.getElementById("id_password1");
+    var bar   = document.getElementById("pw-bar");
+    var label = document.getElementById("pw-label");
+    if (!input || !bar || !label || typeof zxcvbn !== "function") return;
 
-passwordInput.addEventListener("input", function() {
-  const val = passwordInput.value;
-  let strength = 0;
-  if (val.length >= 8) strength += 20;
-  if (/[A-Z]/.test(val)) strength += 20;
-  if (/[0-9]/.test(val)) strength += 20;
-  if (/[^A-Za-z0-9]/.test(val)) strength += 20;
-  if (val.length >= 12) strength += 20;
+    function setBar(score) {
+      // score: 0..4; map to % and color
+      var widths = [10, 30, 55, 80, 100];
+      var classes = ["bg-danger","bg-danger","bg-warning","bg-info","bg-success"];
+      bar.style.width = widths[score] + "%";
+      bar.className = "progress-bar " + classes[score];
+      var words = ["Very weak","Weak","Okay","Good","Strong"];
+      label.textContent = "Strength: " + words[score];
+    }
 
-  strengthBar.style.width = strength + "%";
-  strengthBar.className = "progress-bar";
-  if (strength < 40) strengthBar.classList.add("bg-danger");
-  else if (strength < 80) strengthBar.classList.add("bg-warning");
-  else strengthBar.classList.add("bg-success");
-});
+    input.addEventListener("input", function () {
+      var val = input.value || "";
+      var result = zxcvbn(val);
+      setBar(result.score);
+    });
+  })();
 </script>
 {% endblock %}

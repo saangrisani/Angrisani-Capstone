@@ -18,6 +18,7 @@ _allowed = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1").replace(",",
 ALLOWED_HOSTS = [h for h in _allowed.split() if h]
 
 INSTALLED_APPS = [
+    "whitenoise.runserver_nostatic",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -83,6 +85,10 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
+STORAGES = {
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"}
+}
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Auth redirects ---
@@ -104,6 +110,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://127.0.0.1:8000",
     "https://localhost:8000",
+    "https://localhost:8080",
+    "https://localhost:8090",
 ]
 
 # --- API keys / config from .env ---
