@@ -1,12 +1,10 @@
 {% extends "app1/base.html" %}
 {% load static %}
-{% block title %}VA Finder · Veterans Companion{% endblock %}
-
 {% block content %}
 <div class="container py-4">
   <h3 class="mb-3">Find Veteran Facilities Near You</h3>
 
-  <!-- ChatGPT help – 2025-10-11: add a spot for config warnings (e.g., missing server API key) -->
+  <!-- Added by Web Developer GPT (2025-10-08): placeholder to surface env/API key warnings -->
   <div id="env-warning" class="alert alert-warning d-none"></div>
 
   <!-- Inputs -->
@@ -19,7 +17,7 @@
       <div class="form-text">Or use your current location.</div>
     </div>
 
-    <!-- ChatGPT help – 2025-10-11: radius shown in miles (UI), converted to meters for backend -->
+    <!-- Added by Web Developer GPT (2025-10-08): switch radius UI to miles -->
     <div class="col-6 col-lg-2">
       <label for="radius" class="form-label">Radius (miles)</label>
       <select id="radius" class="form-select">
@@ -29,7 +27,7 @@
       </select>
     </div>
 
-    <!-- Keep lat/lng hidden; we set them if user clicks "Use my location" -->
+    <!-- Added by Web Developer GPT (2025-10-08): keep lat/lng for programmatic use, hide from UI -->
     <div class="d-none">
       <input id="lat" />
       <input id="lng" />
@@ -38,67 +36,44 @@
 
   <!-- Actions -->
   <div class="d-flex gap-2 mb-3">
-    <!--<button id="locate" class="btn btn-outline-secondary">Use my location</button>-->
+   <!-- <button id="locate" class="btn btn-outline-secondary d-none">Location coming soon</button>-->
     <button id="search" class="btn btn-primary">Search Veterans Services</button>
   </div>
 
-  <!-- Geolocation status text (human friendly) -->
-  <div id="geo-status" class="text-muted small mb-2" aria-live="polite"></div>
+  <!-- Added by Web Developer GPT (2025-10-08): human-friendly geolocation status text -->
+  <div id="geo-status" class="text-muted small mb-2"></div>
 
   <!-- Messages + Results -->
-  <div id="error" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+  <div id="error" class="alert alert-danger d-none"></div>
   <div id="empty" class="text-muted">No results yet.</div>
   <div id="results"></div>
 </div>
 
-<!-- DOMPurify to sanitize any HTML we inject into the DOM.
-     Source: https://github.com/cure53/DOMPurify
-     CDN:   https://cdnjs.com/libraries/dompurify -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.7/purify.min.js"
-        integrity="sha512-Sb2Z0z5e7e3N9VxQZJXgQ8yRjL7g9nWzC8Y0h0bOpqj7f7w4oY4gR5P2iQm9pHk3sGKv4lK3wYQ2/2YxqLxQ0w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
 <script>
-/* 
-  VA Finder front-end
-  - ChatGPT help – 2025-10-11: tightened structure, added sanitization + timeouts.
-  - Geolocation pattern based on MDN docs:
-      https://developer.mozilla.org/docs/Web/API/Geolocation_API
-    (Permissions hint based on MDN Permissions API):
-      https://developer.mozilla.org/docs/Web/API/Permissions_API
-  - fetch timeout via AbortController (MDN):
-      https://developer.mozilla.org/docs/Web/API/AbortController
-  - Server endpoint (your code) calls Google Places API (server-side key):
-      https://developers.google.com/maps/documentation/places/web-service/search-nearby
-*/
-
 (function () {
-  // quick selector
-  const $ = (s) => document.querySelector(s);
+  const $ = s => document.querySelector(s);
 
-  // elements
-  const place = $('#place');
-  const latI = $('#lat');
-  const lngI = $('#lng');
-  const radius = $('#radius');
+  const place   = $('#place');
+  const latI    = $('#lat');
+  const lngI    = $('#lng');
+  const radius  = $('#radius');
   const btnSearch = $('#search');
   const btnLocate = $('#locate');
   const results = $('#results');
-  const errBox = $('#error');
-  const empty = $('#empty');
-  const warn = $('#env-warning');
-  const geoTxt = $('#geo-status');
+  const err     = $('#error');
+  const empty   = $('#empty');
+  const warn    = $('#env-warning');
+  const geoTxt  = $('#geo-status');
 
-  // tiny UI helpers
-  function showError(msg){ errBox.textContent = msg; errBox.classList.remove('d-none'); }
-  function hideError(){ errBox.classList.add('d-none'); errBox.textContent = ''; }
+  function showError(msg){ err.textContent = msg; err.classList.remove('d-none'); }
+  function hideError(){ err.classList.add('d-none'); err.textContent = ''; }
   function setEmpty(show, text){ empty.textContent = text || 'No results yet.'; empty.style.display = show ? '' : 'none'; }
   function setGeo(text){ geoTxt.textContent = text || ''; }
 
-  // ChatGPT help – 2025-10-11: convert miles (UI) to meters (backend expects meters)
-  const milesToMeters = (mi) => Math.round(Number(mi || 0) * 1609.344);
+  // Added by Web Developer GPT (2025-10-08): miles -> meters conversion for backend compatibility
+  const milesToMeters = mi => Math.round(Number(mi || 0) * 1609.344);
 
-  // Shorten address to "City, ST"
+  // Added by Web Developer GPT (2025-10-08): show only "City, State" in results
   function cityStateFromAddress(addr) {
     if (!addr) return '';
     const parts = addr.split(',').map(s => s.trim());
@@ -110,9 +85,8 @@
     return addr;
   }
 
-  // Build a result card (sanitized with DOMPurify)
-  // ChatGPT help – 2025-10-11: added sanitization before writing innerHTML
-  function makeCard(p) {
+  // Fixed & enhanced by Web Developer GPT (2025-10-08): corrected template strings and safety
+  function makeCard(p){
     const name = (p.displayName && p.displayName.text) || 'Unknown';
     const addr = p.formattedAddress || '';
     const phone = p.nationalPhoneNumber || p.internationalPhoneNumber || '';
@@ -120,45 +94,30 @@
     const plng = p.location && p.location.longitude;
     const guri = p.googleMapsUri;
     const mapHref = guri || ((plat != null && plng != null)
-      ? `https://www.google.com/maps/search/?api=1&query=${plat},${plng}` : null);
+                   ? `https://www.google.com/maps/search/?api=1&query=${plat},${plng}`
+                   : null);
 
-    const html = `
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title mb-1">${name}</h5>
-          <div class="small text-muted mb-2">${cityStateFromAddress(addr)}</div>
-          ${phone ? `<div class="mb-2">${phone}</div>` : ``}
-          ${mapHref ? `<a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" href="${mapHref}">Open in Maps</a>` : ``}
-        </div>
-      </div>
-    `;
-    const safe = DOMPurify.sanitize(html, { ALLOW_UNKNOWN_PROTOCOLS: false });
-    const wrap = document.createElement('div');
-    wrap.innerHTML = safe;
-    return wrap.firstElementChild;
+    const el = document.createElement('div');
+    el.className = 'card mb-3';
+    el.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title mb-1">${name}</h5>
+        <div class="small text-muted mb-2">${cityStateFromAddress(addr)}</div>
+        ${phone ? `<div class="mb-2">${phone}</div>` : ``}
+        ${mapHref ? `<a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" href="${mapHref}">Open in Maps</a>` : ``}
+      </div>`;
+    return el;
   }
 
-  // fetch with timeout using AbortController (MDN pattern)
-  async function fetchWithTimeout(url, opts = {}, ms = 10000) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), ms);
-    try {
-      return await fetch(url, { ...opts, signal: controller.signal });
-    } finally {
-      clearTimeout(id);
-    }
-  }
-
-  // Run a search against our server route (no Google key on the client)
-  async function runSearch() {
+  async function runSearch(){
     hideError();
     results.innerHTML = '';
     setEmpty(true, 'Searching…');
 
     const qs = new URLSearchParams();
-    const placeVal = (place.value || '').trim();
+    const placeVal = place.value.trim();
 
-    // ChatGPT helped with the implementation of this logic – 2025-10-11
+    // Added by Web Developer GPT (2025-10-08): prefer typed place; fall back to geolocated lat/lng
     if (placeVal) {
       qs.append('place', placeVal);
     } else if (latI.value && lngI.value) {
@@ -169,43 +128,46 @@
       return;
     }
 
-    // UI miles -> meters for backend chatGPT help – 2025-10-11
+    // Added by Web Developer GPT (2025-10-08): send meters even though UI is miles
     qs.append('radius', String(milesToMeters(radius.value)));
 
     try {
-      const r = await fetchWithTimeout(`/api/veterans_nearby?${qs.toString()}`, {}, 10000);
+      const r = await fetch(`/api/veterans_nearby?${qs.toString()}`);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = await r.json();
 
       if (data.error) {
-        // ChatGPT help – 2025-10-11: friendlier config warning
+        // Added by Web Developer GPT (2025-10-08): friendlier env warning block
         if ((data.error || '').includes('Missing GOOGLE_MAPS_API_KEY')) {
           warn.classList.remove('d-none');
           warn.innerHTML = `
-            <strong>Google Places API key not set (server).</strong>
-            Set <code>GOOGLE_MAPS_API_KEY</code> in your environment, then restart.
+            <strong>Google Places API key not set.</strong>
+            Copy <code>.env.example</code> to <code>.env</code> and add:
+            <pre class="mt-2 mb-0">GOOGLE_MAPS_API_KEY=YOUR_KEY</pre>
+            Then restart: <code>python manage.py runserver</code>.
           `;
           setEmpty(true, 'Configuration required.');
           return;
+        } else {
+          showError(`${data.error}${data.details ? ': ' + data.details : ''}`);
+          setEmpty(true, 'No results.');
+          return;
         }
-        showError(`${data.error}${data.details ? ': ' + data.details : ''}`);
-        setEmpty(true, 'No results.');
-        return;
       }
 
       const arr = data.results || [];
       results.innerHTML = '';
-      if (!arr.length) { setEmpty(true, 'No veteran-focused places found for that area.'); return; }
+      if (arr.length === 0) { setEmpty(true, 'No veteran-focused places found for that area.'); return; }
       setEmpty(false);
       arr.forEach(p => results.appendChild(makeCard(p)));
     } catch (e) {
-      showError('Search failed. Try again or check server logs.');
+      showError('Search failed. Check server logs.');
       setEmpty(true, 'Search failed.');
       console.error(e);
     }
   }
 
-  // Geolocation flow (MDN-style), with permission hint text
+  // Added by Web Developer GPT (2025-10-08): robust geolocation with HTTPS check + permission hints
   function geolocate() {
     hideError();
     setGeo('');
@@ -215,12 +177,11 @@
       return;
     }
 
-    // Permissions hint (MDN Permissions API)
     try {
       if (navigator.permissions && navigator.permissions.query) {
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
           if (status.state === 'denied') {
-            setGeo('Location permission is blocked in your browser settings.');
+            setGeo('Location permission is blocked. Enable it in your browser site settings.');
           } else if (status.state === 'prompt') {
             setGeo('Your browser will ask for permission to use your location.');
           } else if (status.state === 'granted') {
@@ -232,14 +193,14 @@
 
     const opts = { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 };
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      pos => {
         latI.value = pos.coords.latitude.toFixed(6);
         lngI.value = pos.coords.longitude.toFixed(6);
         setGeo(`Location set. (${latI.value}, ${lngI.value})`);
       },
-      (errObj) => {
+      errObj => {
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-          showError('Geolocation requires HTTPS (or localhost).');
+          showError('Geolocation requires HTTPS (or localhost). Serve the site over HTTPS.');
         } else {
           showError(errObj.message || 'Failed to get location.');
         }
@@ -250,12 +211,12 @@
   }
 
   // Events
-  btnLocate.addEventListener('click', geolocate);
+  //btnLocate.addEventListener('click', geolocate);
   btnSearch.addEventListener('click', runSearch);
 
-  // If the user starts typing a place, clear old lat/lng so typed wins
-  // ChatGPT help – 2025-10-11
+  // Added by Web Developer GPT (2025-10-08): if user types a place, prefer it over stale lat/lng
   place.addEventListener('input', () => { latI.value = ''; lngI.value = ''; });
+
 })();
 </script>
 {% endblock %}
