@@ -32,7 +32,12 @@
             {{ form.email|add_class:"form-control" }}
           </div>
 
-          {# password (zxcvbn meter below); server still validates everything #}
+           <div class="mb-3">
+            <label class="form-label" for="{{ form.phone.id_for_label }}">Phone</label>
+            {{ form.phone|add_class:"form-control" }}
+          </div>
+
+          {# password (zxcvbn meter below) #}
           <div class="mb-3">
             <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
             {{ form.password1|add_class:"form-control" }}

@@ -1,0 +1,68 @@
+{% extends "app1/base.html" %}
+{% block title %}Mood & Journal{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="mb-3">Mood & Journal</h3>
+# --- Mood logging form --- #
+  <form method="post" action="{% url 'mood_add' %}" class="row g-2 mb-4">
+    {% csrf_token %}
+    <div class="col-auto">
+      <select name="mood" class="form-select form-select-sm">
+        <option>great</option><option>good</option><option>ok</option>
+        <option>low</option><option>down</option><option>anxious</option><option>angry</option>
+      </select>
+    </div>
+    <div class="col">
+      <input name="note" class="form-control form-control-sm" placeholder="Add a note (optional)">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary btn-sm">Log</button>
+    </div>
+  </form>
+<!-- --- Mood entries list --- -->
+  <h5 class="mb-3">Recent Entries</h5>
+<ul class="list-group list-group-flush">
+  {% for e in entries %}
+    <li class="list-group-item small">
+      <strong>{{ e.created_at|date:"M d, H:i" }}</strong> — {{ e.mood }}
+      {% if e.note %}: {{ e.note }}{% endif %}
+
+      {# --- Add this block --- #}
+      {% if e.chat_user_text %}
+        <div class="mt-1 text-muted">
+          <strong>You:</strong> {{ e.chat_user_text }}
+        </div>
+      {% endif %}
+      {% if e.chat_assistant_text %}
+        <div class="mt-1">
+          <strong>Bot:</strong> {{ e.chat_assistant_text }}
+        </div>
+      {% endif %}
+      {# --- End added block --- #}
+    </li>
+  {% empty %}
+    <li class="list-group-item">No entries yet.</li>
+  {% endfor %}
+</ul>
+
+<! --- Mood chart --- -->
+  
+  {% if labels and values %}
+    {{ labels|json_script:"mood-labels" }}
+    {{ values|json_script:"mood-values" }}
+    <hr class="my-4">
+    <canvas id="moodChart" height="120"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const labels = JSON.parse(document.getElementById('mood-labels').textContent);
+      const values = JSON.parse(document.getElementById('mood-values').textContent);
+      const ctx = document.getElementById('moodChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Mood', data: values, tension: 0.3 }]},
+        options: { scales: { y: { min: 0, max: 6, ticks: { stepSize: 1 } } } }
+      });
+    </script>
+  {% endif %}
+</div>
+{% endblock %}

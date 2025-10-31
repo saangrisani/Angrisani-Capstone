@@ -48,9 +48,9 @@
   <div id="empty" class="text-muted">No results yet.</div>
   <div id="results"></div>
 </div>
-
 <script>
 (function () {
+  // Shortcuts
   const $ = s => document.querySelector(s);
 
   const place   = $('#place');
@@ -64,7 +64,7 @@
   const empty   = $('#empty');
   const warn    = $('#env-warning');
   const geoTxt  = $('#geo-status');
-
+// Functions for UI updates
   function showError(msg){ err.textContent = msg; err.classList.remove('d-none'); }
   function hideError(){ err.classList.add('d-none'); err.textContent = ''; }
   function setEmpty(show, text){ empty.textContent = text || 'No results yet.'; empty.style.display = show ? '' : 'none'; }
@@ -137,7 +137,7 @@
       const data = await r.json();
 
       if (data.error) {
-        // Added by Web Developer GPT (2025-10-08): friendlier env warning block
+        // Added by Web Developer GPT (2025-10-08): friendlier  warning block
         if ((data.error || '').includes('Missing GOOGLE_MAPS_API_KEY')) {
           warn.classList.remove('d-none');
           warn.innerHTML = `

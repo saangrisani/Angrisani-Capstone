@@ -5,28 +5,61 @@
 <div class="card p-3 shadow-sm">
   <h1 class="h4 mb-3">User Profile</h1>
 
-  <form method="post">
-    {% csrf_token %}
-
-    <!-- Read-only first/last names -->
+  {% if not editing %}
+    <!-- READ-ONLY MODE -->
     <div class="mb-3">
       <label class="form-label">First Name</label>
-      <input type="text" class="form-control" value="{{ user.first_name }}" >
+      <input type="text" class="form-control" value="{{ profile.first_name }}" disabled>
     </div>
     <div class="mb-3">
       <label class="form-label">Last Name</label>
-      <input type="text" class="form-control" value="{{ user.last_name }}" >
+      <input type="text" class="form-control" value="{{ profile.last_name }}" disabled>
     </div>
-    <!-- Editable email -->
     <div class="mb-3">
       <label class="form-label">Email Address</label>
-      <input type="email" name="email" class="form-control" value="{{ user.email }}" >
+      <input type="email" class="form-control" value="{{ request.user.email }}" disabled>
     </div>
     <div class="mb-3">
       <label class="form-label">Phone Number</label>
-      <input type="text" name="phone" class="form-control" value="{{ profile.phone }}" >
+      <input type="text" class="form-control" value="{{ profile.phone }}" disabled>
     </div>
-    <button type="submit" class="btn btn-primary">Update Profile</button>
-  </form>
+
+    <a href="{% url 'profile' %}?edit=1" class="btn btn-primary me-2">Edit Profile</a>
+    <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm">Change Password</a>
+
+  {% else %}
+    <!-- EDIT MODE -->
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">First Name</label>
+        <input type="text" class="form-control" value="{{ profile.first_name }}" disabled>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Last Name</label>
+        <input type="text" class="form-control" value="{{ profile.last_name }}" disabled>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email Address</label>
+        {{ uform.email }}
+        {% if uform.email.errors %}
+          <div class="text-danger small">{{ uform.email.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Phone Number</label>
+        {{ pform.phone }}
+        {% if pform.phone.errors %}
+          <div class="text-danger small">{{ pform.phone.errors }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{% url 'profile' %}" class="btn btn-link">Cancel</a>
+      <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm float-end">Change Password</a>
+    </form>
+  {% endif %}
 </div>
 {% endblock %}
