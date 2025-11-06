@@ -28,15 +28,7 @@ EXPOSE 8000
 
 # Basic healthcheck (Gunicorn must be up)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
-  CMD python - <<'PY' || exit 1
-import os, sys, urllib.request
-port = os.environ.get("PORT","8000")
-try:
-    with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=4) as r:
-        sys.exit(0 if r.status < 500 else 1)
-except Exception:
-    sys.exit(1)
-PY
+  CMD python -c "import os, sys, urllib.request; port = os.environ.get('PORT','8000'); try: with urllib.request.urlopen(f'http://127.0.0.1:{port}/', timeout=4) as r: sys.exit(0 if r.status < 500 else 1); except Exception: sys.exit(1)"
 
 # Run migrations, collectstatic, ensure superuser (idempotent), then start Gunicorn
 CMD bash -lc "\
