@@ -8,25 +8,27 @@
 #   - Rate limits + backoff guidance: https://platform.openai.com/docs/guides/rate-limits
 #   - Example backoff pattern (Abort/retry ideas): https://platform.openai.com/docs/guides/rate-limits/retrying-with-exponential-backoff
 #   - Python SDK repo: https://github.com/openai/openai-python
-
+# Note: this code uses OpenAI Python SDK v1.x conventions.
 from __future__ import annotations
-
+# --- imports -------------------------------------------------------------------
 import os
 import time
 import random
 from typing import List, Dict, Optional
-
+# --- OpenAI SDK imports --------------------------------------------------------
 from openai import OpenAI, RateLimitError, APIError  # SDK exceptions per 1.x
 
 # --- small helpers ------------------------------------------------------------
-
+# Try to read Retry-After header from exception (if any)
 def _retry_after_from(exc: Exception) -> Optional[float]:
     """
     Try to read a Retry-After header (seconds) if the server provided one.
     If missing or unparsable, return None (we'll use backoff instead).
     """
+    # --- IGNORE ---
     resp = getattr(exc, "response", None)
     headers = getattr(resp, "headers", None) if resp is not None else None
+    # --- IGNORE ---
     if headers and hasattr(headers, "get"):
         val = headers.get("Retry-After")
         try:
@@ -35,12 +37,13 @@ def _retry_after_from(exc: Exception) -> Optional[float]:
             return None
     return None
 
-
+# Exponential backoff with jitter, capped
 def _sleep_backoff(attempt: int, base: float = 0.4, cap: float = 8.0, retry_after: Optional[float] = None) -> None:
     """
     Exponential backoff with jitter, capped. If server says Retry-After, honor it.
     (Pattern based on OpenAI docs/guides – see links above.)
     """
+    # --- IGNORE ---
     if retry_after is not None:
         time.sleep(min(max(retry_after, 0.0), cap))
         return
@@ -48,7 +51,7 @@ def _sleep_backoff(attempt: int, base: float = 0.4, cap: float = 8.0, retry_afte
     time.sleep(delay)
 
 # --- main API -----------------------------------------------------------------
-
+# Make a chat completion request with retries and friendly fallback
 def complete_chat(
     messages: List[Dict],
     model: Optional[str] = None,
@@ -69,16 +72,17 @@ def complete_chat(
 
     ChatGPT help – 2025-10-11: kept this minimal so it’s easy to explain in class.
     """
+    # --- IGNORE ---
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         # Be explicit; this helps students/instructors debug quickly.
         raise RuntimeError("OPENAI_API_KEY is not set in the environment.")
-
+    # --- IGNORE ---
     client = OpenAI(api_key=api_key)
     use_model = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-
+    #
     last_exc: Optional[Exception] = None
-
+    # Retry loop
     for attempt in range(1, max_retries + 1):
         try:
             resp = client.chat.completions.create(
@@ -88,7 +92,7 @@ def complete_chat(
                 max_tokens=max_tokens,
             )
             return (resp.choices[0].message.content or "").strip()
-
+        # --- IGNORE ---
         except RateLimitError as e:
             # 429 can mean "too many requests" (retry) or "insufficient_quota" (stop).
             txt = (str(e) or "").lower()
@@ -100,7 +104,7 @@ def complete_chat(
             last_exc = e
             _sleep_backoff(attempt, retry_after=_retry_after_from(e))
             continue
-
+        # --- IGNORE ---
         except APIError as e:
             # Transient server errors (5xx) → retry; other status codes → stop.
             code = getattr(e, "status_code", None)

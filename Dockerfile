@@ -1,27 +1,21 @@
-FROM python:3.12.6-slim
+# Dockerfile
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PORT=8080
-
-# HTTPS certs for OpenAI, curl for healthchecks
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates curl \
-    && rm -rf /var/lib/apt/lists/*
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-# Install deps first for better caching
+RUN apt-get update && apt-get install -y --no-install-recommends netcat-traditional \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt /app/
-RUN python -m pip install --upgrade pip \
- && pip install -r requirements.txt
+RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 
-# App code + entry script
 COPY . /app/
-RUN chmod +x /app/docker_run_server.sh
 
-# Expose the internal port; you can map it to 80 on run if you want
-EXPOSE 8080
-
-ENTRYPOINT ["/app/docker_run_server.sh"]
+EXPOSE 8000
+CMD ["bash", "-lc", "python manage.py migrate && \
+  python manage.py collectstatic --noinput || true && \
+  gunicorn Vet_Mh.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3 --timeout 120"]

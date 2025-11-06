@@ -5,34 +5,29 @@
 {# Fixed title (was “Breathing Exercise”) #}
 {% block title %}Resources – Veteran's Companion App{% endblock %}
 
-{# Ensure dark theme + allow page-specific tweaks via bg-resources #}
-{% block body_class %}site-bg bg-resources{% endblock %}
-
-{% block head_extra %}
-  {# Keep hero image snappy #}
-  <link rel="preload" as="image" href="{% static 'images/sadvet.jpg' %}" fetchpriority="high">
-
-  <style>
-    /* Added by ChatGPT (Oct 9, 2025): Darken the entire page background a bit more */
-    body.site-bg.bg-resources { --overlay-alpha: .62; } /* tune .55–.75 */
-
-    /* Keep hero strip readable (your 18vh banner) */
-    .bg-overlay{
-      position:absolute; inset:0; z-index:0;
-      background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.78));
-    }
-
-    /* Make sure content sits over background layers */
-    main.container{ position:relative; z-index:1; }
-  </style>
-{% endblock %}
-
 {% block page_bg %}
-  <div class="bg-layer" aria-hidden="true">
-    <img src="{% static 'images/sadvet.jpg' %}" alt="" loading="eager"
-         style="position:absolute;width:100%;height:18vh;top:7vh;object-fit:cover;object-position:center;">
+  <!-- Full-page background -->
+  <div class="bg-layer" aria-hidden="true"
+       style="
+         position: fixed;
+         inset: 0;
+         z-index: -2;
+         overflow: hidden;">
+    <img src="{% static 'img/flag.jpeg' %}" alt="Background"
+         loading="eager"
+         style="
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+           object-position: center;">
   </div>
-  <div class="bg-overlay" aria-hidden="true"></div>
+  <div class="bg-overlay" aria-hidden="true"
+       style="
+         position: fixed;
+         inset: 0;
+         background: rgba(0, 0, 0, 0.4);
+         z-index: -1;">
+  </div>
 {% endblock %}
 
 {% block content %}

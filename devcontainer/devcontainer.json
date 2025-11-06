@@ -1,22 +1,43 @@
 {
-  "name": "Python 3.12 & Django 4.2",
+  "name": "Angrisani Capstone – Python 3.12 & Django 5",
   "image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
-  "postCreateCommand": "pip install -r .devcontainer/requirements.txt",
+
+  // Install dependencies once the container is created
+  "postCreateCommand": "python -m pip install --upgrade pip && pip install -r requirements.txt",
+
+  // Apply DB migrations each time the container starts
+  "postStartCommand": "python manage.py migrate || true",
+
+  // Dev Container Features (correct registry key)
   "features": {
-    "docker-in-docker": "latest"
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
+
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance"
-      ]
+        "ms-python.vscode-pylance",
+        "batisteo.vscode-django"
+      ],
+      "settings": {
+        "python.analysis.typeCheckingMode": "basic",
+        "editor.formatOnSave": true
+      }
     }
   },
+
   "portsAttributes": {
     "8000": {
       "label": "Django App",
       "onAutoForward": "openBrowser"
     }
+  },
+
+  "forwardPorts": [8000],
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
   }
 }

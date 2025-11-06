@@ -1,5 +1,7 @@
 {% extends "app1/base.html" %}
 {% load form_extras %}
+
+{# Cleaned with help from ChatGPT (GPT-5) on 2025-11-06 #}
 {% block title %}Sign Up · Veterans Companion{% endblock %}
 
 {% block content %}
@@ -9,38 +11,47 @@
       <div class="card-body">
         <h1 class="h4 mb-3">Create Account</h1>
 
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
         <form method="post">
           {% csrf_token %}
 
           <div class="mb-3">
             <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
             {{ form.username|add_class:"form-control" }}
+            {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors|striptags }}</div>{% endif %}
           </div>
 
           <div class="mb-3">
             <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
             {{ form.first_name|add_class:"form-control" }}
+            {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors|striptags }}</div>{% endif %}
           </div>
 
           <div class="mb-3">
             <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
             {{ form.last_name|add_class:"form-control" }}
+            {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors|striptags }}</div>{% endif %}
           </div>
 
           <div class="mb-3">
             <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
             {{ form.email|add_class:"form-control" }}
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors|striptags }}</div>{% endif %}
           </div>
 
-           <div class="mb-3">
+          <div class="mb-3">
             <label class="form-label" for="{{ form.phone.id_for_label }}">Phone</label>
             {{ form.phone|add_class:"form-control" }}
+            {% if form.phone.errors %}<div class="text-danger small">{{ form.phone.errors|striptags }}</div>{% endif %}
           </div>
 
-          {# password (zxcvbn meter below) #}
           <div class="mb-3">
             <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
             {{ form.password1|add_class:"form-control" }}
+            {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors|striptags }}</div>{% endif %}
             <div class="progress mt-2" style="height:6px;">
               <div id="pw-bar" class="progress-bar" role="progressbar" style="width:0%;"></div>
             </div>
@@ -50,6 +61,7 @@
           <div class="mb-3">
             <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
             {{ form.password2|add_class:"form-control" }}
+            {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors|striptags }}</div>{% endif %}
           </div>
 
           <button class="btn btn-success w-100" type="submit">Create Account</button>
@@ -63,34 +75,22 @@
   </div>
 </div>
 
-{# Password strength meter using zxcvbn (Dropbox).
-   Source: https://github.com/dropbox/zxcvbn
-   CDN:    https://cdnjs.com/libraries/zxcvbn
-   also used gpt to help clarify #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js" crossorigin="anonymous"></script>
 <script>
-  // simple: read password1 field, score with zxcvbn, update bar/label
-  (function () {
-    var input = document.getElementById("id_password1");
-    var bar   = document.getElementById("pw-bar");
-    var label = document.getElementById("pw-label");
-    if (!input || !bar || !label || typeof zxcvbn !== "function") return;
-
-    function setBar(score) {
-      // score: 0..4; map to % and color
-      var widths = [10, 30, 55, 80, 100];
-      var classes = ["bg-danger","bg-danger","bg-warning","bg-info","bg-success"];
-      bar.style.width = widths[score] + "%";
-      bar.className = "progress-bar " + classes[score];
-      var words = ["Very weak","Weak","Okay","Good","Strong"];
-      label.textContent = "Strength: " + words[score];
-    }
-
-    input.addEventListener("input", function () {
-      var val = input.value || "";
-      var result = zxcvbn(val);
-      setBar(result.score);
-    });
-  })();
+(function () {
+  var input = document.getElementById("id_password1");
+  var bar   = document.getElementById("pw-bar");
+  var label = document.getElementById("pw-label");
+  if (!input || !bar || !label || typeof zxcvbn !== "function") return;
+  var widths  = [10, 30, 55, 80, 100];
+  var classes = ["bg-danger","bg-danger","bg-warning","bg-info","bg-success"];
+  var words   = ["Very weak","Weak","Okay","Good","Strong"];
+  input.addEventListener("input", function () {
+    var score = zxcvbn(input.value || "").score;
+    bar.style.width = widths[score] + "%";
+    bar.className = "progress-bar " + classes[score];
+    label.textContent = "Strength: " + words[score];
+  });
+})();
 </script>
 {% endblock %}

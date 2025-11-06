@@ -27,7 +27,7 @@
       <strong>{{ e.created_at|date:"M d, H:i" }}</strong> — {{ e.mood }}
       {% if e.note %}: {{ e.note }}{% endif %}
 
-      {# --- Add this block --- #}
+      {# --- Added block to show chat entries --- #}
       {% if e.chat_user_text %}
         <div class="mt-1 text-muted">
           <strong>You:</strong> {{ e.chat_user_text }}
@@ -60,7 +60,7 @@
       new Chart(ctx, {
         type: 'line',
         data: { labels, datasets: [{ label: 'Mood', data: values, tension: 0.3 }]},
-        options: { scales: { y: { min: 0, max: 6, ticks: { stepSize: 1 } } } }
+        options: { scales: { y: { min: 0, max: 7, ticks: { stepSize: 1 } } } }
       });
     </script>
   {% endif %}

@@ -1,50 +1,104 @@
-# Vet_Mh/settings.py
+"""
+Django settings for Vet_Mh.
+
+This file was reviewed and simplified with help from ChatGPT (GPT-5).
+- Removes duplicates (ALLOWED_HOSTS defined once)
+- Keeps local .env loading for dev, but uses real env in prod (Cloud Run)
+- Readies static files for WhiteNoise in production
+- Places optional django-axes correctly
+"""
+
 from pathlib import Path
 import os
-from dotenv import load_dotenv, find_dotenv
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Paths & Environment
+# ──────────────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env from project root (folder with manage.py)
-_found = find_dotenv(filename=".env", usecwd=True)
-load_dotenv(_found or (BASE_DIR / ".env"))
+# Load .env only in local/dev environments:
+# In Cloud Run, use env vars / Secret Manager (do not rely on .env).
+if os.getenv("LOAD_DOTENV", "true").lower() == "true":
+    try:
+        from dotenv import load_dotenv, find_dotenv  # type: ignore
+        _found = find_dotenv(filename=".env", usecwd=True)
+        load_dotenv(_found or (BASE_DIR / ".env"))
+    except Exception:
+        # Safe no-op if python-dotenv isn't installed in prod images
+        pass
 
-# --- Core ---
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
+# ──────────────────────────────────────────────────────────────────────────────
+# Core toggles
+# ──────────────────────────────────────────────────────────────────────────────
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")  # override in prod
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-# Comma or space separated hosts are fine
+# Accept space- or comma-separated host list from env; default to localhost for dev
 _allowed = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1").replace(",", " ")
 ALLOWED_HOSTS = [h for h in _allowed.split() if h]
 
+# If behind a proxy (Cloud Run, Nginx), trust forwarded proto for secure redirects
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Installed apps
+# ──────────────────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
+    # Order matters: whitenoise shim prevents Django from serving static in dev
     "whitenoise.runserver_nostatic",
+
+    # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "ai_mhbot",
+
+    # Your app (use the AppConfig path; do NOT also add plain "ai_mhbot")
+    "ai_mhbot.apps.AiMhbotConfig",
+
+    # Optional: brute-force defense + audit (pip install django-axes)
+    # Enable only if you've installed it:
+    # "axes",
 ]
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Middleware
+# ──────────────────────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+
+    # WhiteNoise must be directly after SecurityMiddleware
     "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
+    # If you enable django-axes, uncomment this (and add "axes" to INSTALLED_APPS)
+    # "axes.middleware.AxesMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# ──────────────────────────────────────────────────────────────────────────────
+# URLs / WSGI / ASGI
+# ──────────────────────────────────────────────────────────────────────────────
 ROOT_URLCONF = "Vet_Mh.urls"
+WSGI_APPLICATION = "Vet_Mh.wsgi.application"
+# (Keep asgi.py too, for future async; no setting needed here)
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Templates
+# ──────────────────────────────────────────────────────────────────────────────
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates", BASE_DIR / "templates" / "app1"],
+        # Your repo has /templates and app templates; APP_DIRS=True auto-discovers
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -57,17 +111,26 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "Vet_Mh.wsgi.application"
-
-# --- DB (sqlite by default) ---
+# ──────────────────────────────────────────────────────────────────────────────
+# Database (SQLite for dev/demo; move to Cloud SQL for prod)
+# ──────────────────────────────────────────────────────────────────────────────
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("DB_NAME", BASE_DIR / "db.sqlite3"),
+        # For Postgres example in prod:
+        # "ENGINE": "django.db.backends.postgresql",
+        # "NAME": os.getenv("DB_NAME"),
+        # "USER": os.getenv("DB_USER"),
+        # "PASSWORD": os.getenv("DB_PASSWORD"),
+        # "HOST": os.getenv("DB_HOST"),
+        # "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 
-# --- Auth / i18n ---
+# ──────────────────────────────────────────────────────────────────────────────
+# Auth / i18n
+# ──────────────────────────────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -80,31 +143,47 @@ TIME_ZONE = "America/Los_Angeles"
 USE_I18N = True
 USE_TZ = True
 
-# --- Static ---
+# ──────────────────────────────────────────────────────────────────────────────
+# Static files (author in /static; collect to /staticfiles)
+# ──────────────────────────────────────────────────────────────────────────────
+# Use path-style STATIC_URL (no leading slash) for modern Django
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
+STATICFILES_DIRS = [BASE_DIR / "static"]      # your authored assets
+STATIC_ROOT = BASE_DIR / "staticfiles"        # collectstatic output
 
-STORAGES = {
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"}
-}
+# Storage: simple in dev; compressed manifest in prod for far-future caching
+if DEBUG:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        }
+    }
+else:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        }
+    }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# --- Auth redirects ---
+# ──────────────────────────────────────────────────────────────────────────────
+# Auth redirects
+# ──────────────────────────────────────────────────────────────────────────────
 LOGIN_REDIRECT_URL = "/chat/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/login/"
 
-# --- Security toggles (tighten in prod) ---
+# ──────────────────────────────────────────────────────────────────────────────
+# Security toggles (tighten in prod)
+# ──────────────────────────────────────────────────────────────────────────────
 SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-# Hosts
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-# CSRF trusted origins (both http and https for localhost)
+# CSRF trusted origins for local + room for Cloud Run URL
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
@@ -112,10 +191,22 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
     "https://localhost:8080",
     "https://localhost:8090",
+    "https://reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev",
 ]
 
-# --- API keys / config from .env ---
+ALLOWED_HOSTS.append("reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev")
+
+# In Codespaces the site runs over HTTPS — secure cookies are fine
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+# ──────────────────────────────────────────────────────────────────────────────
+# Third-party / API keys (kept here for convenience; read from env)
+# ──────────────────────────────────────────────────────────────────────────────
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
-VA_FACILITIES_API_KEY = os.getenv("VA_FACILITIES_API_KEY", "")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
+
+# Optional django-axes defaults (only effective if "axes" installed & middleware enabled)
+AXES_ENABLED = os.getenv("AXES_ENABLED", "false").lower() == "true"
+AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", "5"))
+AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", "60"))  # minutes

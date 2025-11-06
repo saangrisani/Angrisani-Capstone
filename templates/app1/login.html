@@ -1,5 +1,16 @@
 {% extends "app1/base.html" %}
+{% load static %}
 {% load form_extras %}
+
+{% block page_bg %}
+  <!-- Full-page background -->
+  <div class="bg-layer" aria-hidden="true" style="position:fixed;inset:0;z-index:-2;overflow:hidden;">
+    <img src="{% static 'img/salute.jpeg' %}" alt="Background" loading="eager"
+         style="width:100%;height:100%;object-fit:cover;object-position:center;">
+  </div>
+  <div class="bg-overlay" aria-hidden="true"
+       style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:-1;"></div>
+{% endblock %}
 
 {% block title %}Login · Veterans Companion{% endblock %}
 
@@ -10,7 +21,7 @@
       <div class="card-body">
         <h1 class="h4 mb-3">Sign In</h1>
 
-        {# ChatGPT help – 2025-10-14: show all errors once at the top, keep the rest simple #}
+        {# Show any validation messages so you know why POST returned 200 #}
         {% if form.non_field_errors or form.errors %}
           <div class="alert alert-danger">
             {{ form.non_field_errors }}

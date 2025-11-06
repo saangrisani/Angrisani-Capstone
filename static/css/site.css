@@ -1,27 +1,31 @@
 /* ==== Dark site background & smooth polish ==== */
-body.site-bg{
-  background:#0b1020;           /* deep navy */
-  color:#e9eef4;                 /* soft light text */
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  scroll-behavior:smooth;
+body.site-bg {
+  background: #081231;           /* deep navy */
+  color: #e9eef4;                /* soft light text */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 /* Darken the image overlay so the hero blends smoothly */
-.bg-overlay{ background: rgba(0,0,0,.45); }
+.bg-overlay { 
+  background: rgba(61, 24, 24, 0.45); 
+}
 
 /* Cards feel lighter-glass on dark bg */
-.card{ border-radius:1rem; }
-.card-fun{
-  background: rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.12);
-  color:#f1f5f9;
+.card { 
+  border-radius: 1rem; 
+}
+.card-fun {
+  background: rgba(155, 71, 71, 0.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #f1f5f9;
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
 /* Primary white card (hero welcome) on dark bg */
-.hero-card{
-  background: #ffffff;
+.hero-card {
+  background: #615353;
   color: #0b1020;
   border: 0;
   border-radius: 1rem;
@@ -29,20 +33,80 @@ body.site-bg{
 }
 
 /* Buttons pop against dark */
-.btn{ border-radius:.75rem; }
-.btn-fun{ background:var(--c3); color:#fff; }
-.btn-outline-light{ color:#f8fafc; border-color:rgba(255,255,255,.5); }
-.btn-outline-light:hover{ background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.8); }
+.btn { 
+  border-radius: .75rem; 
+}
+.btn-fun { 
+  background: var(--c3); 
+  color: #eb0606; 
+}
+.btn-outline-light { 
+  color: #da1818; 
+  border-color: rgba(15, 142, 70, 0.5); 
+}
+.btn-outline-light:hover { 
+  background: rgba(255,255,255,.1); 
+  border-color: rgba(255,255,255,.8); 
+}
 
 /* Muted text tone on dark */
-.text-muted{ color:#9db0c1 !important; }
+.text-muted { 
+  color: #9db0c1 !important; 
+}
 
 /* Links readable on dark */
-a { color:#9ecbff; }
-a:hover { color:#bfe0ff; }
+a { 
+  color: #9ecbff; 
+}
+a:hover { 
+  color: #bfe0ff; 
+}
 
 /* Keep main content above background layers */
-main.container{ position:relative; z-index:1; }
+main.container { 
+  position: relative; 
+  z-index: 1; 
+}
 
 /* Optional: softer section spacing */
-.section-gap{ margin-top:1.25rem; }
+.section-gap { 
+  margin-top: 1.25rem; 
+}
+
+/* ==== Background images for Veterans Companion App ==== */
+/* ChatGPT assist 2025-11-04 */
+
+.bg-ptsd {
+  background: url("/static/img/ptsd.jpeg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.bg-memory {
+  background: url("/static/img/memory.jpeg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.bg-group {
+  background: url("/static/img/group.jpeg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.bg-flag {
+  background: url("/static/img/flag.jpeg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+.bg-salute {
+  background: url("/static/img/salute.jpeg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* Overlay blends dark theme with readable text */
+.page-overlay {
+  background-color: rgba(0, 0, 0, 0.55);
+  min-height: 100vh;
+  color: #f1f5f9;
+  padding: 2rem;
+  z-index: 1;
+  position: relative;
+}

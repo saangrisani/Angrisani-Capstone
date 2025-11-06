@@ -3,6 +3,32 @@
 {% block title %}Home · Veterans Companion{% endblock %}
 {% block body_class %}site-bg bg-home{% endblock %}
 
+{% block page_bg %}
+  <!-- Full-page background -->
+  <div class="bg-layer" aria-hidden="true"
+       style="
+         position: fixed;
+         inset: 0;
+         z-index: -2;
+         overflow: hidden;">
+    <img src="{% static 'img/group.jpeg' %}" alt="Background"
+         loading="eager"
+         style="
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+           object-position: center;">
+  </div>
+  <div class="bg-overlay" aria-hidden="true"
+       style="
+         position: fixed;
+         inset: 0;
+         background: rgba(0, 0, 0, 0.4);
+         z-index: -1;">
+  </div>
+{% endblock %}
+
+
 {% block content %}
 <div class="hero-card p-4">
   <h1 class="h4 mb-2">Welcome to the Veterans Mental Health Companion Application</h1>
