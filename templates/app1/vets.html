@@ -36,7 +36,7 @@
 
   <!-- Actions -->
   <div class="d-flex gap-2 mb-3">
-   <!-- <button id="locate" class="btn btn-outline-secondary d-none">Location coming soon</button>-->
+    <button id="locate" class="btn btn-outline-secondary">Use my location</button>
     <button id="search" class="btn btn-primary">Search Veterans Services</button>
   </div>
 
@@ -211,7 +211,7 @@
   }
 
   // Events
-  //btnLocate.addEventListener('click', geolocate);
+  btnLocate.addEventListener('click', geolocate);
   btnSearch.addEventListener('click', runSearch);
 
   // Added by Web Developer GPT (2025-10-08): if user types a place, prefer it over stale lat/lng

@@ -282,24 +282,17 @@ def chat(request):
     # 6) Save mood entry with both sides of the chat if we detected one
     if pending_mood:
         mood_val, note_txt = pending_mood
-
-        # If you want exactly ONE mood per user per day, replace this with update_or_create:
-        # MoodEntry.objects.update_or_create(
-        #     user=request.user, day=timezone.localdate(),
-        #     defaults=dict(
-        #         mood=mood_val, note=note_txt, session_id=session_key,
-        #         chat_user_text=user_text, chat_assistant_text=reply or "",
-        #     ),
-        # )
-        # Otherwise, allow multiple per day:
-        MoodEntry.objects.create(
+        # Use update_or_create so we don't accidentally double-write moods for the same user/day.
+        MoodEntry.objects.update_or_create(
             user=request.user,
-            mood=mood_val,
-            note=note_txt,
-            session_id=session_key,
             day=timezone.localdate(),
-            chat_user_text=user_text,
-            chat_assistant_text=reply or "",
+            defaults=dict(
+                mood=mood_val,
+                note=note_txt,
+                session_id=session_key,
+                chat_user_text=user_text,
+                chat_assistant_text=reply or "",
+            ),
         )
 
     return render(request, "app1/chat.html", {"reply": reply, "user_text": user_text})
@@ -392,10 +385,52 @@ def veterans_nearby(request):
     api_key = settings.GOOGLE_MAPS_API_KEY or os.getenv("GOOGLE_MAPS_API_KEY", "")
     if not api_key:
         return JsonResponse({"results": [], "error": "Missing GOOGLE_MAPS_API_KEY"}, status=200)
-
+    # Accept either a typed `place=City, State` OR programmatic `lat` & `lng` (meters radius)
     place = (request.GET.get("place") or "").strip()
+    lat = request.GET.get("lat")
+    lng = request.GET.get("lng")
+    radius = request.GET.get("radius") or str(32186)  # default ~20 miles in meters
+
+    # If lat/lng provided, prefer Nearby Search (faster for device geolocation)
+    if lat and lng:
+        try:
+            params = {
+                "key": api_key,
+                "location": f"{lat},{lng}",
+                "radius": int(radius),
+                "keyword": '(VA OR Veterans OR "Vet Center" OR "American Legion" OR VFW OR DAV)'
+            }
+            r = requests.get("https://maps.googleapis.com/maps/api/place/nearbysearch/json", params=params, timeout=15)
+            if not r.ok:
+                return JsonResponse({"results": [], "error": f"NearbySearch {r.status_code}", "details": r.text}, status=200)
+
+            raw = r.json()
+            places = []
+            for res in raw.get("results", []):
+                name = res.get("name") or ""
+                addr = res.get("vicinity") or res.get("formatted_address") or ""
+                geom = res.get("geometry", {}).get("location", {})
+                plat = geom.get("lat")
+                plng = geom.get("lng")
+                pid = res.get("place_id")
+                maps_uri = f"https://www.google.com/maps/search/?api=1&query=place_id:{pid}" if pid else None
+                places.append(
+                    {
+                        "displayName": {"text": name},
+                        "formattedAddress": addr,
+                        "location": {"latitude": plat, "longitude": plng},
+                        "googleMapsUri": maps_uri,
+                    }
+                )
+            return JsonResponse({"results": _filter_veteran_places(places)}, status=200)
+        except requests.Timeout:
+            return JsonResponse({"results": [], "error": "Upstream timeout"}, status=200)
+        except requests.RequestException as e:
+            return JsonResponse({"results": [], "error": "Upstream request failed", "details": str(e)}, status=200)
+
+    # Otherwise, fall back to text search by place name (existing behavior)
     if not place:
-        return JsonResponse({"results": [], "error": "Provide ?place=City, State"}, status=200)
+        return JsonResponse({"results": [], "error": "Provide ?place=City, State or lat/lng"}, status=200)
 
     headers = {
         "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-{% extends "app1/base.html" %}
+.{% extends "app1/base.html" %}
 {% block title %}Mood & Journal{% endblock %}
 {% block content %}
 <div class="container py-4">
@@ -19,9 +19,27 @@
       <button class="btn btn-primary btn-sm">Log</button>
     </div>
   </form>
-<!-- --- Mood entries list --- -->
-  <h5 class="mb-3">Recent Entries</h5>
-<ul class="list-group list-group-flush">
+<!-- --- Mood entries list (collapsible whole list) --- -->
+<h5 class="mb-3 d-flex align-items-center justify-content-between">
+  <span>Recent Entries</span>
+  <div>
+    <button id="toggle-entries" class="btn btn-sm btn-outline-secondary">Hide</button>
+  </div>
+</h5>
+
+<!-- Collapsed summary bar (shown when list is hidden) -->
+<div id="entries-collapsed-bar" class="alert alert-light py-2 d-none" style="display:none;">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <strong>{{ entries|length }}</strong> entries — recently logged
+    </div>
+    <div>
+      <button id="expand-entries" class="btn btn-sm btn-outline-primary">Show entries</button>
+    </div>
+  </div>
+</div>
+
+<ul class="list-group list-group-flush m" id="mood-entries">
   {% for e in entries %}
     <li class="list-group-item small">
       <strong>{{ e.created_at|date:"M d, H:i" }}</strong> — {{ e.mood }}
@@ -44,6 +62,38 @@
     <li class="list-group-item">No entries yet.</li>
   {% endfor %}
 </ul>
+
+<style>
+/* keep the collapsed bar compact */
+#entries-collapsed-bar { border-radius: 6px; margin-bottom: 8px; }
+</style>
+
+<script>
+(function () {
+  var toggleBtn = document.getElementById('toggle-entries');
+  var expandBtn = document.getElementById('expand-entries');
+  var listEl = document.getElementById('mood-entries');
+  var collapsedBar = document.getElementById('entries-collapsed-bar');
+
+  function setCollapsed(collapsed) {
+    if (collapsed) {
+      listEl.style.display = 'none';
+      collapsedBar.style.display = '';
+      if (toggleBtn) toggleBtn.textContent = 'Show';
+    } else {
+      listEl.style.display = '';
+      collapsedBar.style.display = 'none';
+      if (toggleBtn) toggleBtn.textContent = 'Hide';
+    }
+  }
+
+  // initial state: expanded (change if you prefer collapsed by default)
+  setCollapsed(false);
+
+  toggleBtn && toggleBtn.addEventListener('click', function () { setCollapsed(listEl.style.display !== 'none'); });
+  expandBtn && expandBtn.addEventListener('click', function () { setCollapsed(false); });
+})();
+</script>
 
 <! --- Mood chart --- -->
   
