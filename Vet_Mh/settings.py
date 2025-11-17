@@ -30,12 +30,11 @@ if os.getenv("LOAD_DOTENV", "true").lower() == "true":
 # ──────────────────────────────────────────────────────────────────────────────
 # Core toggles
 # ──────────────────────────────────────────────────────────────────────────────
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")  # override in prod
-DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
+print("⚙️ DJANGO_ALLOWED_HOSTS raw:", os.getenv("DJANGO_ALLOWED_HOSTS"))
+print("⚙️ ALLOWED_HOSTS parsed:", ALLOWED_HOSTS)
 
-# Accept space- or comma-separated host list from env; default to localhost for dev
-_allowed = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1").replace(",", " ")
-ALLOWED_HOSTS = [h for h in _allowed.split() if h]
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split()
+print("⚙️ CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
 
 # If behind a proxy (Cloud Run, Nginx), trust forwarded proto for secure redirects
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
