@@ -10,3 +10,4 @@ staticfiles/
 # misc
 .DS_Store
 /staticfiles/
+.env
