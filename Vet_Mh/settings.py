@@ -30,11 +30,29 @@ if os.getenv("LOAD_DOTENV", "true").lower() == "true":
 # ──────────────────────────────────────────────────────────────────────────────
 # Core toggles
 # ──────────────────────────────────────────────────────────────────────────────
-print("⚙️ DJANGO_ALLOWED_HOSTS raw:", os.getenv("DJANGO_ALLOWED_HOSTS"))
-print("⚙️ ALLOWED_HOSTS parsed:", ALLOWED_HOSTS)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")  # override in prod
+DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split()
-print("⚙️ CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
+# Accept space- or comma-separated host list from env; default to localhost + Codespaces
+_default_hosts = (
+    "localhost 127.0.0.1 "
+    "reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev"
+)
+_allowed_raw = os.getenv("DJANGO_ALLOWED_HOSTS", _default_hosts)
+ALLOWED_HOSTS = [h for h in _allowed_raw.replace(",", " ").split() if h]
+
+# CSRF trusted origins: env override, with sane local defaults
+_default_csrf = (
+    "http://127.0.0.1:8000 "
+    "http://localhost:8000 "
+    "https://127.0.0.1:8000 "
+    "https://localhost:8000 "
+    "https://localhost:8080 "
+    "https://localhost:8090 "
+    "https://reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev"
+)
+_csrf_raw = os.getenv("CSRF_TRUSTED_ORIGINS", _default_csrf)
+CSRF_TRUSTED_ORIGINS = [o for o in _csrf_raw.replace(",", " ").split() if o]
 
 # If behind a proxy (Cloud Run, Nginx), trust forwarded proto for secure redirects
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -179,22 +197,6 @@ LOGIN_URL = "/login/"
 SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
-
-#ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-
-# CSRF trusted origins for local + room for Cloud Run URL
-#CSRF_TRUSTED_ORIGINS = [
- #   "http://127.0.0.1:8000",
-  #  "http://localhost:8000",
-   # "https://127.0.0.1:8000",
-    #"https://localhost:8000",
-    #"https://localhost:8080",
-    #"https://localhost:8090",
-    #"https://reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev",
-#]
-
-#ALLOWED_HOSTS.append("reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev")
-
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Third-party / API keys (kept here for convenience; read from env)
