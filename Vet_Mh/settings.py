@@ -196,9 +196,7 @@ CSRF_COOKIE_SECURE = not DEBUG
 
 #ALLOWED_HOSTS.append("reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev")
 
-# In Codespaces the site runs over HTTPS — secure cookies are fine
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Third-party / API keys (kept here for convenience; read from env)
 # ──────────────────────────────────────────────────────────────────────────────
