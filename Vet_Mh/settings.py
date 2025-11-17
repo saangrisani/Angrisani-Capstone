@@ -181,20 +181,20 @@ SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+#ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 # CSRF trusted origins for local + room for Cloud Run URL
-CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-    "https://127.0.0.1:8000",
-    "https://localhost:8000",
-    "https://localhost:8080",
-    "https://localhost:8090",
-    "https://reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev",
-]
+#CSRF_TRUSTED_ORIGINS = [
+ #   "http://127.0.0.1:8000",
+  #  "http://localhost:8000",
+   # "https://127.0.0.1:8000",
+    #"https://localhost:8000",
+    #"https://localhost:8080",
+    #"https://localhost:8090",
+    #"https://reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev",
+#]
 
-ALLOWED_HOSTS.append("reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev")
+#ALLOWED_HOSTS.append("reimagined-potato-v6vw9xrgjj9v2w4w5-8000.app.github.dev")
 
 # In Codespaces the site runs over HTTPS — secure cookies are fine
 CSRF_COOKIE_SECURE = True
