@@ -206,26 +206,29 @@ def chat(request):
     if request.method == "GET":
         return render(request, "app1/chat.html")
 
-    # 1) get user text
+    # Step 1: Extract and validate user message from various possible form fields
     user_text = ""
     for key in ("message", "text", "prompt", "content"):
         val = request.POST.get(key)
         if val:
             user_text = val.strip()
             break
+    
     if not user_text:
         dj_messages.error(request, "Please tell me what I can help with today to serve your mental health needs.")
         return render(request, "app1/chat.html", {"reply": None})
 
-    # Ensure a stable session id exists (important for persistence)
+    # Step 2: Ensure session ID exists (needed for persistent conversation history)
     if not request.session.session_key:
         request.session.save()
     session_key = request.session.session_key
 
-    # 2) save user message
+    # Step 3: Save user message to chat history
     ChatMessage.objects.create(user=request.user, session_id=session_key, role="user", content=user_text)
 
-    # 3) lightweight mood detection from keywords (non-clinical)
+    # Step 4: Lightweight mood detection from keywords (NOT clinical)
+    # This simple keyword matching helps populate the mood dashboard.
+    # It's a heuristic, not a psychiatric assessment.
     lowered = user_text.lower()
     pending_mood = None
     if any(w in lowered for w in ["suicid", "kill myself", "end it", "can't go on"]):
@@ -243,10 +246,11 @@ def chat(request):
     elif any(w in lowered for w in ["good", "great", "better today", "feeling better"]):
         pending_mood = ("good", "positive wording in chat")
 
-    # 4) call OpenAI backend
+    # Step 5: Call OpenAI API to generate a supportive response
+    # Build message list: system prompt → few-shot examples → user message
     payload = [{"role": "system", "content": SYSTEM_ROLE}] + FEW_SHOTS + [{"role": "user", "content": user_text}]
     try:
-        raw = complete_chat(payload)
+        raw = complete_chat(payload)  # Call helper from openai_utility.py
         reply = None
         if raw is None:
             reply = None
@@ -271,16 +275,17 @@ def chat(request):
         dj_messages.error(request, f"Chat backend error: {e}")
         reply = None
 
-    # 5) save assistant message
+    # Step 6: Save assistant's message to conversation history
     ChatMessage.objects.create(
         user=request.user,
         session_id=session_key,
         role="assistant",
         content=reply or "",
-        meta={"source": "openai", "ok": bool(reply)},
+        meta={"source": "openai", "ok": bool(reply)},  # Track source and success
     )
 
-    # 6) Save mood entry with both sides of the chat if we detected one
+    # Step 7: Save mood entry if one was detected (one per day, via update_or_create)
+    # Stores chat context alongside mood snapshot for later review
     if pending_mood:
         mood_val, note_txt = pending_mood
         # Use update_or_create so we don't accidentally double-write moods for the same user/day.
@@ -303,10 +308,12 @@ def chat(request):
 @login_required
 def mood_add(request):
     """
-    Manual mood entry: now records session_id and day so entries persist and
-    can be aggregated by day across visits/devices.
-    Uses update_or_create to prevent duplicates—only one mood entry per user per day.
-    Manual entries override auto-detected chat moods.
+    Manual mood entry endpoint.
+    
+    Allows logged-in users to record their current mood + optional note.
+    - Session-aware (tied to session_id and day for persistence)
+    - Uses update_or_create: exactly ONE mood entry per user per day
+    - Manual entries override auto-detected chat moods on the same day
     """
     if request.method == "POST":
         if not request.session.session_key:
@@ -331,8 +338,15 @@ def mood_add(request):
 @login_required
 def mood_dashboard(request):
     """
-    Shows history, preselects the last mood in the add form, and displays a
-    simple “presence streak” of consecutive days with any mood entry.
+    Mood tracker dashboard & history viewer.
+    
+    Displays:
+    - All historical mood entries (oldest first by created_at)
+    - Chart data (labels/dates and mood values for visualization)
+    - Last mood (for form preselection convenience)
+    - Presence streak (consecutive days with any mood entry)
+    
+    Useful for users to spot mood trends and patterns over time.
     """
     entries = list(MoodEntry.objects.filter(user=request.user).order_by("created_at"))
 
@@ -373,7 +387,18 @@ VET_REGEX = re.compile(
 )
 
 def _filter_veteran_places(places):
-    """Filter down to veteran-related places by name/address keywords."""
+    """
+    Filter Google Places API results to show only veteran-related facilities.
+    
+    Checks both place name and address against VET_REGEX pattern.
+    Removes unrelated results (e.g., pizza places, banks) that accidentally match.
+    
+    Args:
+        places (list): Raw place results from Google Places API.
+    
+    Returns:
+        list: Filtered places matching veteran-related keywords.
+    """
     out = []
     for p in places or []:
         name = (p.get("displayName", {}) or {}).get("text", "") or ""
@@ -385,19 +410,34 @@ def _filter_veteran_places(places):
 @require_GET
 def veterans_nearby(request):
     """
-    Find veteran-related places by city/state (?place=Chico, CA)
-    Returns JSON {results: [...], error?: str}
+    Veteran locator API endpoint - find VA & vet services nearby.
+    
+    Supports two search modes:
+    1. GPS/Nearby Search: lat/lng + radius (device-based, fast)
+    2. Text Search: place (city/state/ZIP, flexible but slower)
+    
+    Query Parameters:
+        lat (float): Latitude for nearby search
+        lng (float): Longitude for nearby search
+        place (str): City, state, or ZIP for text search
+        radius (int): Search radius in meters (default ~20 miles)
+    
+    Returns:
+        JSON: {\"results\": [...veteran places...]}  or  {\"error\": \"...\"}
     """
     api_key = settings.GOOGLE_MAPS_API_KEY or os.getenv("GOOGLE_MAPS_API_KEY", "")
     if not api_key:
         return JsonResponse({"results": [], "error": "Missing GOOGLE_MAPS_API_KEY"}, status=200)
-    # Accept either a typed `place=City, State` OR programmatic `lat` & `lng` (meters radius)
-    place = (request.GET.get("place") or "").strip()
-    lat = request.GET.get("lat")
-    lng = request.GET.get("lng")
-    radius = request.GET.get("radius") or str(32186)  # default ~20 miles in meters
+    
+    # Extract search parameters
+    place = (request.GET.get("place") or "").strip()  # City/state for text search
+    lat = request.GET.get("lat")  # Latitude for GPS search
+    lng = request.GET.get("lng")  # Longitude for GPS search
+    radius = request.GET.get("radius") or str(32186)  # Radius in meters (default ~20 miles)
 
-    # If lat/lng provided, prefer Nearby Search (faster for device geolocation)
+    # ========== ROUTE 1: GPS/Nearby Search (preferred if lat/lng provided) ==========
+    # Faster and more accurate than text search for device-based queries.
+    # Good for mobile users with GPS enabled.
     if lat and lng:
         try:
             params = {
@@ -434,7 +474,9 @@ def veterans_nearby(request):
         except requests.RequestException as e:
             return JsonResponse({"results": [], "error": "Upstream request failed", "details": str(e)}, status=200)
 
-    # Otherwise, fall back to text search by place name (existing behavior)
+    # ========== ROUTE 2: Text Search (fallback if no lat/lng) ==========
+    # Slower but flexible (works with city names, ZIP codes, addresses).
+    # Good for desktop users or when GPS is unavailable/disabled.
     if not place:
         return JsonResponse({"results": [], "error": "Provide ?place=City, State or lat/lng"}, status=200)
 

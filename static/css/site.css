@@ -14,38 +14,38 @@ body.site-bg {
 
 /* Cards feel lighter-glass on dark bg */
 .card { 
-  border-radius: 1rem; 
+  border-radius: 2rem; 
 }
 .card-fun {
-  background: rgba(155, 71, 71, 0.08);
-  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(129, 133, 130, 0.438);
+  border: 2px solid rgba(180, 54, 54, 0.486);
   color: #f1f5f9;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.788);
 }
 
 /* Primary white card (hero welcome) on dark bg */
 .hero-card {
   background: #615353;
-  color: #0b1020;
+  color: #25dd00;
   border: 0;
-  border-radius: 1rem;
-  box-shadow: 0 10px 32px rgba(0,0,0,.35);
+  border-radius: 2rem;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.048);
 }
 
 /* Buttons pop against dark */
 .btn { 
-  border-radius: .75rem; 
+  border-radius: 2rem; 
 }
 .btn-fun { 
-  background: var(--c3); 
-  color: #eb0606; 
+  background: #c2b3b3;
+  color: #f5eeee; 
 }
 .btn-outline-light { 
-  color: #da1818; 
-  border-color: rgba(15, 142, 70, 0.5); 
+  color: #eeebeb; 
+  border-color: rgba(8, 255, 115, 0.959); 
 }
 .btn-outline-light:hover { 
-  background: rgba(255,255,255,.1); 
+  background: rgb(248, 0, 0); 
   border-color: rgba(255,255,255,.8); 
 }
 
@@ -56,10 +56,10 @@ body.site-bg {
 
 /* Links readable on dark */
 a { 
-  color: #9ecbff; 
+  color: #ee0808; 
 }
 a:hover { 
-  color: #bfe0ff; 
+  color: #e07a06; 
 }
 
 /* Keep main content above background layers */

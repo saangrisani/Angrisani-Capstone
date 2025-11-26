@@ -1,5 +1,34 @@
 {% extends "app1/base.html" %}
 {% load static %}
+
+{% block page_bg %}
+  <!-- Full-page background -->
+  <div class="bg-layer" aria-hidden="true"
+       style="
+         position: fixed;
+         inset: 0;
+         z-index: -2;
+         overflow: hidden;">
+    <img src="{% static 'img/flag.jpeg' %}" alt="Background"
+         loading="eager"
+         style="
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+           object-position: center;">
+  </div>
+  <div class="bg-overlay" aria-hidden="true"
+       style="
+         position: fixed;
+         inset: 0;
+         background: rgba(0, 0, 0, 0.4);
+         z-index: -1;">
+  </div>
+{% endblock %}
+
+
+
+
 {% block content %}
 <div class="container py-4">
   <h3 class="mb-3">Find Veteran Facilities Near You</h3>
@@ -36,7 +65,7 @@
 
   <!-- Actions -->
   <div class="d-flex gap-2 mb-3">
-    <button id="locate" class="btn btn-outline-secondary">Use my location</button>
+    <button id="locate" class="btn btn-outline-primary">Use my location</button>
     <button id="search" class="btn btn-primary">Search Veterans Services</button>
   </div>
 

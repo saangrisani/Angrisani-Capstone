@@ -11,7 +11,7 @@
          inset: 0;
          z-index: -2;
          overflow: hidden;">
-    <img src="{% static 'img/memory.jpeg' %}" alt="Background"
+    <img src="{% static 'img/flag.jpeg' %}" alt="Background"
          loading="eager"
          style="
            width: 100%;
@@ -32,15 +32,16 @@
 <!-- Heads-up banner (scope + crisis info) -->
 <div class="alert alert-warning border shadow-sm">
   <strong>Important:</strong> Emotional support only — <em>Not medical or legal advice</em>.
+      <em>Veterans Companion</em> is not affiliated with or endorsed by the U.S. Department of Veterans Affairs. This is created and maintained by students as a capstone project.
   In crisis, call <strong>988 (Press 1)</strong>.
 </div>
 
 <!-- User input form -->
 <form method="post" action="{% url 'chat' %}" class="card p-3 shadow-sm mt-2">
   {% csrf_token %}
-  <label for="id_message" class="form-label">Your message</label>
-  <textarea id="id_message" name="message" rows="3" class="form-control" required>{{ user_text|default_if_none:"" }}</textarea>
-  <button type="submit" class="btn btn-primary mt-2">Send</button>
+  <label for="id_message" class="form-label">What mental health struggles are you facing today?</label>
+  <textarea id="id_message" name="message" rows="1" class="form-control" required>{{ user_text|default_if_none:"" }}</textarea>
+  <button type="submit" class="btn btn-primary mt-2">Tell me your struggles</button>
 </form>
 
 <!-- Assistant panel (always visible)
@@ -48,15 +49,10 @@
      ChatGPT help ------Added default reply + kept safe rendering to prevent XSS. -->
 <div class="card mt-3 shadow-sm">
   <div class="card-body">
-    <strong>Assistant:</strong>
+    <strong>Mental Health Assistant:</strong>
     <div class="mt-2">
-      {{ reply|default:"No response yet — type a message and press Send to start a conversation."|linebreaks }}
+      {{ reply|default:"No response yet — type a message and press Send to start a conversation. Remember, I am here only to support your mental health needs"|linebreaks }}
     </div>
   </div>
 </div>
-{% endblock %}
-{% block footer_extra %}
-  <div class="text-center text-muted small mt-4 mb-2">
-    <em>Veterans Companion</em> is not affiliated with or endorsed by the U.S. Department of Veterans Affairs.
-  </div>
 {% endblock %}
