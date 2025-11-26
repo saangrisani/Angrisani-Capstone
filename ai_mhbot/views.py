@@ -305,6 +305,8 @@ def mood_add(request):
     """
     Manual mood entry: now records session_id and day so entries persist and
     can be aggregated by day across visits/devices.
+    Uses update_or_create to prevent duplicates—only one mood entry per user per day.
+    Manual entries override auto-detected chat moods.
     """
     if request.method == "POST":
         if not request.session.session_key:
@@ -313,12 +315,15 @@ def mood_add(request):
 
         mood = request.POST.get("mood", "ok")
         note = request.POST.get("note", "")
-        MoodEntry.objects.create(
+        # Use update_or_create so manual entries override chat-detected moods for the day
+        MoodEntry.objects.update_or_create(
             user=request.user,
-            mood=mood,
-            note=note,
-            session_id=session_key,
             day=timezone.localdate(),
+            defaults=dict(
+                mood=mood,
+                note=note,
+                session_id=session_key,
+            ),
         )
     return redirect("mood_dashboard")
 
