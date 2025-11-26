@@ -14,7 +14,12 @@
         <li>Things you can <strong>taste</strong> (or try to recall a favorite taste)</li> 
     </ul>
     <p class="text-muted mb-3">Breathe slowly; say each of these items out loud, or in your head.</p>
-    <a href="{% url 'resources' %}" class="btn btn-outline-primary">Back to resources</a>
+    <a href="{% url 'resources' %}" class="btn btn-outline-light">Back to resources</a>
+    <form method="post" action="{% url 'exercise_complete' %}" class="d-inline ms-2">
+        {% csrf_token %}
+        <input type="hidden" name="exercise" value="grounding">
+        <button type="submit" class="btn btn-outline-light">Mark as done & return to chat</button>
+    </form>
 </div>
 
 {% endblock %}

@@ -64,9 +64,9 @@
   </div>
 
   <!-- Actions -->
-  <div class="d-flex gap-2 mb-3">
-    <button id="locate" class="btn btn-outline-primary">Use my location</button>
-    <button id="search" class="btn btn-primary">Search Veterans Services</button>
+    <div class="d-flex gap-2 mb-3">
+    <button id="locate" class="btn btn-outline-light">Use my location</button>
+    <button id="search" class="btn btn-outline-light">Search Veterans Services</button>
   </div>
 
   <!-- Added by Web Developer GPT (2025-10-08): human-friendly geolocation status text -->
@@ -119,6 +119,7 @@
     const name = (p.displayName && p.displayName.text) || 'Unknown';
     const addr = p.formattedAddress || '';
     const phone = p.nationalPhoneNumber || p.internationalPhoneNumber || '';
+    const website = p.websiteUri || '';
     const plat = p.location && p.location.latitude;
     const plng = p.location && p.location.longitude;
     const guri = p.googleMapsUri;
@@ -128,12 +129,18 @@
 
     const el = document.createElement('div');
     el.className = 'card mb-3';
+    // create a phone-safe tel: link
+    let telHref = '';
+    if (phone) {
+      telHref = phone.replace(/[^+0-9]/g, '');
+    }
     el.innerHTML = `
       <div class="card-body">
         <h5 class="card-title mb-1">${name}</h5>
         <div class="small text-muted mb-2">${cityStateFromAddress(addr)}</div>
-        ${phone ? `<div class="mb-2">${phone}</div>` : ``}
-        ${mapHref ? `<a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" href="${mapHref}">Open in Maps</a>` : ``}
+        ${phone ? `<div class="mb-2"><a href="tel:${telHref}">${phone}</a></div>` : ``}
+        ${website ? `<a class="btn btn-sm btn-outline-light me-2" target="_blank" rel="noopener" href="${website}">Website</a>` : ``}
+        ${mapHref ? `<a class="btn btn-sm btn-outline-light" target="_blank" rel="noopener" href="${mapHref}">Open in Maps</a>` : ``}
       </div>`;
     return el;
   }

@@ -19,7 +19,7 @@ from django.contrib import messages as dj_messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
-from django.views.decorators.http import require_http_methods, require_GET
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.http import JsonResponse
 from django.utils import timezone  # <-- for day/streak handling
 
@@ -142,6 +142,61 @@ def exercise_grounding(request): return render(request, "app1/exercise_grounding
 def exercise_sleep(request): return render(request, "app1/exercise_sleep.html")
 
 
+@login_required
+@require_POST
+def exercise_complete(request):
+    """Record that the logged-in user completed an in-app exercise.
+
+    Expected POST params:
+      - exercise: short slug or label (e.g., 'breathing')
+
+    Creates a ChatMessage entry noting completion and redirects to chat.
+    """
+    if not request.session.session_key:
+        request.session.save()
+    session_key = request.session.session_key
+    exercise = (request.POST.get("exercise") or "exercise").strip()
+
+    # Create an assistant-style message acknowledging completion so it's visible in the chat history.
+    try:
+        ChatMessage.objects.create(
+            user=request.user,
+            session_id=session_key,
+            role="assistant",
+            content=f"I see you completed the {exercise} exercise — well done. If you'd like, tell me how that felt.",
+            meta={"exercise_completed": exercise},
+        )
+        dj_messages.success(request, "Exercise recorded. Back in chat you can tell me how it felt.")
+    except Exception:
+        dj_messages.warning(request, "Could not record exercise completion in chat history.")
+
+    # Also log the exercise into today's mood entry (append to note). Preserve existing mood if present.
+    try:
+        today = timezone.localdate()
+        existing = MoodEntry.objects.filter(user=request.user, day=today).first()
+        base_mood = existing.mood if existing else "ok"
+        prev_note = (existing.note or "") if existing else ""
+        new_note = prev_note.strip()
+        if new_note:
+            new_note = new_note + "\n"
+        new_note = new_note + f"Exercise completed: {exercise}"
+
+        MoodEntry.objects.update_or_create(
+            user=request.user,
+            day=today,
+            defaults=dict(
+                mood=base_mood,
+                note=new_note,
+                session_id=session_key,
+            ),
+        )
+    except Exception:
+        # Don't block user flow on logging failure; just warn in server logs.
+        pass
+
+    return redirect("chat")
+
+
 # ------------------------- Auth: signup -------------------------
 @require_http_methods(["GET", "POST"])
 def signup(request):
@@ -252,13 +307,17 @@ def chat(request):
     try:
         raw = complete_chat(payload)  # Call helper from openai_utility.py
         reply = None
+        resources = None
         if raw is None:
             reply = None
         elif isinstance(raw, str):
             reply = raw
         elif isinstance(raw, dict):
+            # Structured fallback from helper: {"message":..., "resources": [...]}
+            resources = raw.get("resources")
             reply = (
-                raw.get("content")
+                raw.get("message")
+                or raw.get("content")
                 or (raw.get("message") or {}).get("content")
                 or (raw.get("choices", [{}])[0].get("message") or {}).get("content")
                 or (raw.get("choices", [{}])[0].get("delta") or {}).get("content")
@@ -301,7 +360,12 @@ def chat(request):
             ),
         )
 
-    return render(request, "app1/chat.html", {"reply": reply, "user_text": user_text})
+    # Pass any structured resources (fallback links) to the template for richer UI rendering
+    ctx = {"reply": reply, "user_text": user_text}
+    if 'resources' in locals() and resources:
+        ctx['resources'] = resources
+
+    return render(request, "app1/chat.html", ctx)
 
 
 # ------------------------- Mood tracker -------------------------
@@ -466,8 +530,50 @@ def veterans_nearby(request):
                         "formattedAddress": addr,
                         "location": {"latitude": plat, "longitude": plng},
                         "googleMapsUri": maps_uri,
+                        # placeholders for enrichment
+                        "nationalPhoneNumber": None,
+                        "internationalPhoneNumber": None,
+                        "websiteUri": None,
+                        "place_id": pid,
                     }
                 )
+            # Enrich with Place Details for a small number of results to fetch phone/website
+            try:
+                details_limit = int(os.getenv('GOOGLE_PLACES_DETAILS_LIMIT', '5'))
+            except Exception:
+                details_limit = 5
+
+            p_count = 0
+            for p in places:
+                pid = p.get('place_id')
+                if not pid:
+                    continue
+                if p_count >= details_limit:
+                    break
+                try:
+                    dparams = {
+                        'place_id': pid,
+                        'key': api_key,
+                        'fields': 'formatted_phone_number,international_phone_number,website',
+                    }
+                    dr = requests.get('https://maps.googleapis.com/maps/api/place/details/json', params=dparams, timeout=8)
+                    if dr.ok:
+                        djson = dr.json()
+                        result = djson.get('result', {})
+                        # Map into shape used by frontend
+                        p['nationalPhoneNumber'] = result.get('formatted_phone_number')
+                        p['internationalPhoneNumber'] = result.get('international_phone_number')
+                        p['websiteUri'] = result.get('website')
+                except Exception:
+                    # Ignore enrichment failures; return base data
+                    pass
+                p_count += 1
+
+            # Remove internal place_id before returning (we used it only for enrichment)
+            for p in places:
+                if 'place_id' in p:
+                    del p['place_id']
+
             return JsonResponse({"results": _filter_veteran_places(places)}, status=200)
         except requests.Timeout:
             return JsonResponse({"results": [], "error": "Upstream timeout"}, status=200)

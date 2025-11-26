@@ -14,7 +14,12 @@
         <li>Avoid alcohol before bed</li>
         <li>Get regular exercise, but not too close to bedtime</li> 
     </ul>
-    <a href="{% url 'resources' %}" class="btn btn-outline-primary">Back to resources</a>
+    <a href="{% url 'resources' %}" class="btn btn-outline-light">Back to resources</a>
+    <form method="post" action="{% url 'exercise_complete' %}" class="d-inline ms-2">
+        {% csrf_token %}
+        <input type="hidden" name="exercise" value="sleep">
+        <button type="submit" class="btn btn-outline-light">Mark as done & return to chat</button>
+    </form>
 </div>
 
 {% endblock %}

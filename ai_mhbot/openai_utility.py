@@ -83,6 +83,18 @@ def complete_chat(
     #
     last_exc: Optional[Exception] = None
     # Retry loop
+    def _make_fallback(message_text: str):
+        resources = [
+            {"label": "Veterans Crisis Line", "url": "https://www.veteranscrisisline.net", "external": True},
+            {"label": "VA main site", "url": "https://www.va.gov", "external": True},
+            {"label": "Find Vet Centers", "url": "https://www.va.gov/find-locations", "external": True},
+            {"label": "National Suicide & Crisis Lifeline", "url": "tel:988", "external": True},
+            {"label": "Breathing exercise", "url": "/exercise/breathing/", "external": False},
+            {"label": "Grounding exercise", "url": "/exercise/grounding/", "external": False},
+            {"label": "Sleep exercise", "url": "/exercise/sleep/", "external": False},
+        ]
+        return {"message": message_text, "resources": resources}
+
     for attempt in range(1, max_retries + 1):
         try:
             resp = client.chat.completions.create(
@@ -98,18 +110,11 @@ def complete_chat(
             txt = (str(e) or "").lower()
             if "insufficient_quota" in txt or "check your plan and billing" in txt:
                 # Helpful resources to surface to users when API access is blocked
-                return (
+                msg = (
                     "⚠️ I can’t reach the AI service because this project has no available credit. "
-                    "I’m still here to listen and offer general support.\n\n"
-                    "If you need immediate help or resources, here are some options:\n"
-                    "- Veterans Crisis Line: dial 988 then press 1, text 838255, or visit https://www.veteranscrisisline.net\n"
-                    "- VA main site (search locations/services): https://www.va.gov\n"
-                    "- Find Vet Centers: https://www.va.gov/find-locations\n"
-                    "- National Suicide & Crisis Lifeline: dial 988\n"
-                    "- Breathing exercise: /exercise/breathing/\n"
-                    "- Grounding exercise: /exercise/grounding/\n"
-                    "- Sleep exercise: /exercise/sleep/\n"
+                    "I’m still here to listen and offer general support."
                 )
+                return _make_fallback(msg)
             last_exc = e
             _sleep_backoff(attempt, retry_after=_retry_after_from(e))
             continue
@@ -121,18 +126,11 @@ def complete_chat(
             if code == 429:
                 txt = (getattr(e, "message", "") or str(e)).lower()
                 if "insufficient_quota" in txt or "check your plan and billing" in txt:
-                    return (
+                    msg = (
                         "⚠️ I can’t reach the AI service because this project has no available credit. "
-                        "I’m still here to listen and offer general support.\n\n"
-                        "If you need immediate help or resources, here are some options:\n"
-                        "- Veterans Crisis Line: dial 988 then press 1, text 838255, or visit https://www.veteranscrisisline.net\n"
-                        "- VA main site (search locations/services): https://www.va.gov\n"
-                        "- Find Vet Centers: https://www.va.gov/find-locations\n"
-                        "- National Suicide & Crisis Lifeline: dial 988\n"
-                        "- Breathing exercise: /exercise/breathing/\n"
-                        "- Grounding exercise: /exercise/grounding/\n"
-                        "- Sleep exercise: /exercise/sleep/\n"
+                        "I’m still here to listen and offer general support."
                     )
+                    return _make_fallback(msg)
                 last_exc = e
                 _sleep_backoff(attempt, retry_after=_retry_after_from(e))
                 continue
@@ -150,16 +148,8 @@ def complete_chat(
             break
 
     # Friendly fallback (don’t leak stack traces to users)
-    return (
+    msg = (
         "⚠️ I’m having trouble contacting the AI service right now. "
-        "If you’re in crisis, call 988 (Press 1). Otherwise, I’m listening—"
-        "tell me a bit more about what’s going on.\n\n"
-        "Helpful resources while the AI is unavailable:\n"
-        "- Veterans Crisis Line: dial 988 then press 1, text 838255, or visit https://www.veteranscrisisline.net\n"
-        "- VA main site (search locations/services): https://www.va.gov\n"
-        "- Find Vet Centers: https://www.va.gov/find-locations\n"
-        "- National Suicide & Crisis Lifeline: dial 988\n"
-        "- Breathing exercise: /exercise/breathing/\n"
-        "- Grounding exercise: /exercise/grounding/\n"
-        "- Sleep exercise: /exercise/sleep/\n"
+        "If you’re in crisis, call 988 (Press 1). Otherwise, I’m listening—tell me a bit more about what’s going on."
     )
+    return _make_fallback(msg)

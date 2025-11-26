@@ -15,7 +15,12 @@
         <li>Exhale completely through your mouth for a count of 8</li>
         <li>Repeat 4 times or until you feel calm</li>
     </ul>
-    <a href="{% url 'resources' %}" class="btn btn-outline-primary">Back to resources</a>
+    <a href="{% url 'resources' %}" class="btn btn-outline-light">Back to resources</a>
+    <form method="post" action="{% url 'exercise_complete' %}" class="d-inline ms-2">
+        {% csrf_token %}
+        <input type="hidden" name="exercise" value="breathing">
+        <button type="submit" class="btn btn-outline-light">Mark as done & return to chat</button>
+    </form>
 </div>
 
 {% endblock %}

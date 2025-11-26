@@ -30,29 +30,43 @@
 
 {% block content %}
 <!-- Heads-up banner (scope + crisis info) -->
-<div class="alert alert-warning border shadow-sm">
+<div class="alert alert-warning border shadow-sm translucent-panel">
   <strong>Important:</strong> Emotional support only — <em>Not medical or legal advice</em>.
       <em>Veterans Companion</em> is not affiliated with or endorsed by the U.S. Department of Veterans Affairs. This is created and maintained by students as a capstone project.
   In crisis, call <strong>988 (Press 1)</strong>.
 </div>
+<div class="page-overlay">
 
-<!-- User input form -->
-<form method="post" action="{% url 'chat' %}" class="card p-3 shadow-sm mt-2">
+  <!-- User input form -->
+  <form method="post" action="{% url 'chat' %}" class="card p-3 shadow-sm mt-2 translucent-panel">
   {% csrf_token %}
   <label for="id_message" class="form-label">What mental health struggles are you facing today?</label>
   <textarea id="id_message" name="message" rows="1" class="form-control" required>{{ user_text|default_if_none:"" }}</textarea>
-  <button type="submit" class="btn btn-primary mt-2">Tell me your struggles</button>
+  <button type="submit" class="btn btn-outline-light mt-2">Tell me your struggles</button>
 </form>
 
 <!-- Assistant panel (always visible)
      - If there's no reply yet, we show a default friendly message.
      ChatGPT help ------Added default reply + kept safe rendering to prevent XSS. -->
-<div class="card mt-3 shadow-sm">
-  <div class="card-body">
+ <div class="card mt-3 shadow-sm translucent-panel">
+   <div class="card-body">
     <strong>Mental Health Assistant:</strong>
     <div class="mt-2">
       {{ reply|default:"No response yet — type a message and press Send to start a conversation. Remember, I am here only to support your mental health needs"|linebreaks }}
     </div>
+    {% if resources %}
+      <hr />
+      <div class="mt-2 d-flex flex-wrap gap-2">
+        {% for r in resources %}
+          {% if r.external %}
+            <a class="btn btn-outline-light btn-sm" target="_blank" rel="noopener" href="{{ r.url }}">{{ r.label }}</a>
+          {% else %}
+            <a class="btn btn-outline-light btn-sm" href="{{ r.url }}">{{ r.label }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
+</div>
 </div>
 {% endblock %}

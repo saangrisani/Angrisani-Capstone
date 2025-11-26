@@ -28,6 +28,7 @@ from ai_mhbot.views import (
     exercise_breathing,
     exercise_grounding,
     exercise_sleep,
+    exercise_complete,
     mood_dashboard,
     mood_add,
     veterans_nearby,
@@ -81,6 +82,7 @@ urlpatterns = [
     path("exercise/breathing/", exercise_breathing, name="exercise_breathing"),
     path("exercise/grounding/", exercise_grounding, name="exercise_grounding"),
     path("exercise/sleep/", exercise_sleep, name="exercise_sleep"),
+    path("exercise/complete/", exercise_complete, name="exercise_complete"),
 
     # Mood tracker
     path("mood/", mood_dashboard, name="mood_dashboard"),

@@ -110,3 +110,28 @@ main.container {
   z-index: 1;
   position: relative;
 }
+
+/* Small translucent panel for focused components (chat banner, input, assistant card) */
+.translucent-panel {
+  background-color: rgba(0, 0, 0, 0.46);
+  color: #f1f5f9;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  transition: box-shadow .18s ease, transform .12s ease;
+}
+
+.translucent-panel:hover,
+.translucent-panel:focus-within {
+  box-shadow: 0 12px 36px rgba(0,0,0,0.7);
+  transform: translateY(-2px);
+}
+
+/* Focus styles for interactive elements for keyboard users */
+.translucent-panel .btn:focus,
+.btn:focus {
+  box-shadow: 0 0 0 3px rgba(8, 255, 115, 0.10);
+  outline: none;
+}

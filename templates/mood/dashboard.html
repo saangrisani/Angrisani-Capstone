@@ -1,103 +1,118 @@
-.{% extends "app1/base.html" %}
+{% extends "app1/base.html" %}
+{% load static %}
 {% block title %}Mood & Journal{% endblock %}
+
+{% block page_bg %}
+  <!-- Use same hero background as home -->
+  <div class="bg-layer" aria-hidden="true"
+       style="position: fixed; inset: 0; z-index: -2; overflow: hidden;">
+    <img src="{% static 'img/group.jpeg' %}" alt="Background" loading="eager"
+         style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+  </div>
+  <div class="bg-overlay" aria-hidden="true"
+       style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: -1;"></div>
+{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <h3 class="mb-3">Mood & Journal</h3>
-# --- Mood logging form --- #
-  <form method="post" action="{% url 'mood_add' %}" class="row g-2 mb-4">
-    {% csrf_token %}
-    <div class="col-auto">
-      <select name="mood" class="form-select form-select-sm">
-        <option>great</option><option>good</option><option>ok</option>
-        <option>low</option><option>down</option><option>anxious</option><option>angry</option>
-      </select>
-    </div>
-    <div class="col">
-      <input name="note" class="form-control form-control-sm" placeholder="Add a note (optional)">
-    </div>
-    <div class="col-auto">
-      <button class="btn btn-primary btn-sm">Log</button>
-    </div>
-  </form>
-<!-- --- Mood entries list (collapsible whole list) --- -->
-<h5 class="mb-3 d-flex align-items-center justify-content-between">
-  <span>Recent Entries</span>
-  <div>
-    <button id="toggle-entries" class="btn btn-sm btn-outline-secondary">Hide</button>
+  <div class="hero-card translucent-panel p-4 mb-4">
+    <h3 class="mb-2">Mood & Journal</h3>
+    <p class="text-muted mb-3">Track your daily moods and notes. Entries are saved per day.</p>
+
+    <!-- Mood logging form -->
+    <form method="post" action="{% url 'mood_add' %}" class="row g-2 mb-0">
+      {% csrf_token %}
+      <div class="col-auto">
+        <select name="mood" class="form-select form-select-sm">
+          <option>great</option><option>good</option><option>ok</option>
+          <option>low</option><option>down</option><option>anxious</option><option>angry</option>
+        </select>
+      </div>
+      <div class="col">
+        <input name="note" class="form-control form-control-sm" placeholder="Add a note (optional)">
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-outline-light btn-sm">Log</button>
+      </div>
+    </form>
   </div>
-</h5>
 
-<!-- Collapsed summary bar (shown when list is hidden) -->
-<div id="entries-collapsed-bar" class="alert alert-light py-2 d-none" style="display:none;">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <strong>{{ entries|length }}</strong> entries — recently logged
+  <div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <h5 class="mb-0 text-light">Recent Entries</h5>
+      <div>
+        <button id="toggle-entries" class="btn btn-sm btn-outline-light">Hide</button>
+      </div>
     </div>
-    <div>
-      <button id="expand-entries" class="btn btn-sm btn-outline-primary">Show entries</button>
+
+    <div id="entries-collapsed-bar" class="alert alert-light py-2 d-none" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ entries|length }}</strong> entries — recently logged
+        </div>
+        <div>
+          <button id="expand-entries" class="btn btn-sm btn-outline-light">Show entries</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mood-entries">
+      {% for e in entries %}
+        <div class="translucent-panel card mb-2">
+          <div class="card-body small">
+            <div class="d-flex justify-content-between">
+              <div><strong>{{ e.created_at|date:"M d, H:i" }}</strong> — {{ e.mood }}</div>
+              <div class="text-muted small">{{ e.created_at|time:"H:i" }}</div>
+            </div>
+            {% if e.note %}
+              <div class="mt-1">{{ e.note }}</div>
+            {% endif %}
+            {% if e.chat_user_text %}
+              <div class="mt-1 text-muted"><strong>You:</strong> {{ e.chat_user_text }}</div>
+            {% endif %}
+            {% if e.chat_assistant_text %}
+              <div class="mt-1"><strong>Bot:</strong> {{ e.chat_assistant_text }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="alert alert-light">No entries yet.</div>
+      {% endfor %}
     </div>
   </div>
-</div>
 
-<ul class="list-group list-group-flush m" id="mood-entries">
-  {% for e in entries %}
-    <li class="list-group-item small">
-      <strong>{{ e.created_at|date:"M d, H:i" }}</strong> — {{ e.mood }}
-      {% if e.note %}: {{ e.note }}{% endif %}
+  <style>
+  /* keep the collapsed bar compact */
+  #entries-collapsed-bar { border-radius: 6px; margin-bottom: 8px; }
+  </style>
 
-      {# --- Added block to show chat entries --- #}
-      {% if e.chat_user_text %}
-        <div class="mt-1 text-muted">
-          <strong>You:</strong> {{ e.chat_user_text }}
-        </div>
-      {% endif %}
-      {% if e.chat_assistant_text %}
-        <div class="mt-1">
-          <strong>Bot:</strong> {{ e.chat_assistant_text }}
-        </div>
-      {% endif %}
-      {# --- End added block --- #}
-    </li>
-  {% empty %}
-    <li class="list-group-item">No entries yet.</li>
-  {% endfor %}
-</ul>
+  <script>
+  (function () {
+    var toggleBtn = document.getElementById('toggle-entries');
+    var expandBtn = document.getElementById('expand-entries');
+    var entriesEl = document.getElementById('mood-entries');
+    var collapsedBar = document.getElementById('entries-collapsed-bar');
 
-<style>
-/* keep the collapsed bar compact */
-#entries-collapsed-bar { border-radius: 6px; margin-bottom: 8px; }
-</style>
-
-<script>
-(function () {
-  var toggleBtn = document.getElementById('toggle-entries');
-  var expandBtn = document.getElementById('expand-entries');
-  var listEl = document.getElementById('mood-entries');
-  var collapsedBar = document.getElementById('entries-collapsed-bar');
-
-  function setCollapsed(collapsed) {
-    if (collapsed) {
-      listEl.style.display = 'none';
-      collapsedBar.style.display = '';
-      if (toggleBtn) toggleBtn.textContent = 'Show';
-    } else {
-      listEl.style.display = '';
-      collapsedBar.style.display = 'none';
-      if (toggleBtn) toggleBtn.textContent = 'Hide';
+    function setCollapsed(collapsed) {
+      if (collapsed) {
+        if (entriesEl) entriesEl.style.display = 'none';
+        if (collapsedBar) collapsedBar.style.display = '';
+        if (toggleBtn) toggleBtn.textContent = 'Show';
+      } else {
+        if (entriesEl) entriesEl.style.display = '';
+        if (collapsedBar) collapsedBar.style.display = 'none';
+        if (toggleBtn) toggleBtn.textContent = 'Hide';
+      }
     }
-  }
 
-  // initial state: expanded (change if you prefer collapsed by default)
-  setCollapsed(false);
+    // initial state: expanded
+    setCollapsed(false);
 
-  toggleBtn && toggleBtn.addEventListener('click', function () { setCollapsed(listEl.style.display !== 'none'); });
-  expandBtn && expandBtn.addEventListener('click', function () { setCollapsed(false); });
-})();
-</script>
+    if (toggleBtn) toggleBtn.addEventListener('click', function () { setCollapsed(entriesEl.style.display !== 'none'); });
+    if (expandBtn) expandBtn.addEventListener('click', function () { setCollapsed(false); });
+  })();
+  </script>
 
-<! --- Mood chart --- -->
-  
   {% if labels and values %}
     {{ labels|json_script:"mood-labels" }}
     {{ values|json_script:"mood-values" }}
@@ -115,5 +130,6 @@
       });
     </script>
   {% endif %}
+
 </div>
 {% endblock %}
