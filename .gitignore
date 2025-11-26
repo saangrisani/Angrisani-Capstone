@@ -1,13 +1,22 @@
-# secrets & env
+# Secrets & environment
 .env
-.env.*
-# python
+.env.local
+.env.*.local
+
+# Python
 __pycache__/
 *.pyc
-# django
+*.pyo
+*.egg-info/
+*.egg
+.Python
+
+# Django
 db.sqlite3
 staticfiles/
-# misc
+*.log
+
+# OS
 .DS_Store
-/staticfiles/
-.env
+.vscode/
+.idea/
