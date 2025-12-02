@@ -9,10 +9,10 @@ from django.dispatch import receiver
 # ------------------------------ MoodEntry ------------------------------
 class MoodEntry(models.Model):
     """
-    A user's mood snapshot. Now:
+    A user's mood snapshot:
     - Persists across visits
     - Tied to a session_id (for continuity per browser session)
-    - Includes a 'day' field for daily rollups & streaks
+    - Includes a 'day' field
     """
     MOODS = [(m, m) for m in ["great", "good", "ok", "sad", "down", "angry", "anxious", "stressed"]]
 
@@ -36,10 +36,6 @@ class MoodEntry(models.Model):
             models.Index(fields=["user", "created_at"]),
             models.Index(fields=["user", "day"]),
         ]
-        # If you want exactly one mood per user per day, uncomment this:
-        # constraints = [
-        #     models.UniqueConstraint(fields=["user", "day"], name="uniq_user_day_mood"),
-        # ]
 
     def __str__(self):
         return f"{self.user.username} · {self.day} · {self.mood}"

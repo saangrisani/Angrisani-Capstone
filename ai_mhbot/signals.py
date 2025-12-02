@@ -29,7 +29,7 @@ def _extract_ip_ua(request):
     ip, _is_routable = (None, False)
     ua = ""
     if request is not None:
-        ip, _is_routable = get_client_ip(request)  # may return None
+        ip, _is_routable = get_client_ip(request)
         ua = request.META.get("HTTP_USER_AGENT", "")
     return ip, ua
 
@@ -52,7 +52,6 @@ def on_user_logged_out(sender, request, user, **kwargs):
     Fires on logout.
     """
     ip, ua = _extract_ip_ua(request)
-    # user may be None in some flows; LoginEvent allows null user
     LoginEvent.objects.create(
         user=user if isinstance(user, User) else None,
         event="logout",
@@ -62,10 +61,7 @@ def on_user_logged_out(sender, request, user, **kwargs):
 
 @receiver(user_login_failed)
 def on_user_login_failed(sender, credentials, request, **kwargs):
-    """
-    Fires when authentication fails.
-    credentials may include 'username' (string). Do NOT store raw password.
-    """
+
     ip, ua = _extract_ip_ua(request)
     username = ""
     try:
@@ -76,7 +72,7 @@ def on_user_login_failed(sender, credentials, request, **kwargs):
     LoginEvent.objects.create(
         user=None,
         event="login_failed",
-        username_tried=username[:150],  # avoid overlength
+        username_tried=username[:150],
         ip_address=ip,
         user_agent=ua,
     )

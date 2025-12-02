@@ -40,7 +40,6 @@ class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         """
         Save the User (and ensure Profile exists with phone saved there).
-        Note: Profile syncing for first/last/email can also be handled by your existing signals.
         """
         user = super().save(commit=False)
         user.first_name = self.cleaned_data["first_name"].strip()

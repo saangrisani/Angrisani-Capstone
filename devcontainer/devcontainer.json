@@ -8,7 +8,7 @@
   // Apply DB migrations each time the container starts
   "postStartCommand": "python manage.py migrate || true",
 
-  // Dev Container Features (correct registry key)
+  // Dev Container Features
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },

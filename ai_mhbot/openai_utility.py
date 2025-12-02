@@ -75,7 +75,6 @@ def complete_chat(
     # --- IGNORE ---
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        # Be explicit; this helps students/instructors debug quickly.
         raise RuntimeError("OPENAI_API_KEY is not set in the environment.")
     # --- IGNORE ---
     client = OpenAI(api_key=api_key)
@@ -109,7 +108,7 @@ def complete_chat(
             # 429 can mean "too many requests" (retry) or "insufficient_quota" (stop).
             txt = (str(e) or "").lower()
             if "insufficient_quota" in txt or "check your plan and billing" in txt:
-                # Helpful resources to surface to users when API access is blocked
+                # Helpful resources when API access is blocked
                 msg = (
                     "⚠️ I can’t reach the AI service because this project has no available credit. "
                     "I’m still here to listen and offer general support."
@@ -138,16 +137,16 @@ def complete_chat(
                 last_exc = e
                 _sleep_backoff(attempt)
                 continue
-            # Non-retryable API error; break to fallback.
+            # Non-retryable API error, to fallback.
             last_exc = e
             break
 
         except Exception as e:
-            # Network issues, timeouts, etc. → bail to fallback after loop.
+            # Network issues, timeouts, etc. to fallback after loop.
             last_exc = e
             break
 
-    # Friendly fallback (don’t leak stack traces to users)
+    # Friendly fallback
     msg = (
         "⚠️ I’m having trouble contacting the AI service right now. "
         "If you’re in crisis, call 988 (Press 1). Otherwise, I’m listening—tell me a bit more about what’s going on."

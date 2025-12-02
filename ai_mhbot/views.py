@@ -28,7 +28,7 @@ from ipware import get_client_ip
 from .forms import CustomUserCreationForm, ProfileUpdateForm, UserUpdateForm
 from .models import MoodEntry, Profile, ChatMessage, LoginEvent
 from .openai_utility import complete_chat
-# ------------------------- Simple keyword screening for risk/abuse -------------------------
+# -------------------------  keyword screening for risk/abuse -------------------------
 RISK_TERMS = [
     "suicide","kill myself","end it","can't go on","hurt myself","self harm",
     "kill them","hurt them","shoot","stab",
@@ -148,7 +148,7 @@ def exercise_complete(request):
     """Record that the logged-in user completed an in-app exercise.
 
     Expected POST params:
-      - exercise: short slug or label (e.g., 'breathing')
+      - exercise(ex, 'breathing')
 
     Creates a ChatMessage entry noting completion and redirects to chat.
     """
@@ -208,7 +208,6 @@ def signup(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user: User = form.save()  # form handles first/last/email, Profile phone
-            # optional audit event
             ip, _ = get_client_ip(request)
             ua = request.META.get("HTTP_USER_AGENT", "")
             try:
@@ -216,7 +215,7 @@ def signup(request):
             except Exception:
                 pass
             dj_messages.success(request, "Account created. Please sign in to continue.")
-            return redirect("login")  # 302 on success
+            return redirect("login")  # 302 success
     else:
         form = CustomUserCreationForm()
 
@@ -283,10 +282,9 @@ def chat(request):
 
     # Step 4: Lightweight mood detection from keywords (NOT clinical)
     # This simple keyword matching helps populate the mood dashboard.
-    # It's a heuristic, not a psychiatric assessment.
     lowered = user_text.lower()
     pending_mood = None
-    if any(w in lowered for w in ["suicid", "kill myself", "end it", "can't go on"]):
+    if any(w in lowered for w in ["suicide", "kill myself", "end it", "can't go on"]):
         pending_mood = ("stressed", "flagged crisis language in chat")
     elif any(w in lowered for w in ["panic", "panicking", "anxious", "anxiety", "overwhelmed"]):
         pending_mood = ("anxious", "detected anxious wording in chat")
@@ -343,7 +341,7 @@ def chat(request):
         meta={"source": "openai", "ok": bool(reply)},  # Track source and success
     )
 
-    # Step 7: Save mood entry if one was detected (one per day, via update_or_create)
+    # Step 7: Save mood entry if one was detected
     # Stores chat context alongside mood snapshot for later review
     if pending_mood:
         mood_val, note_txt = pending_mood
@@ -480,12 +478,6 @@ def veterans_nearby(request):
     1. GPS/Nearby Search: lat/lng + radius (device-based, fast)
     2. Text Search: place (city/state/ZIP, flexible but slower)
     
-    Query Parameters:
-        lat (float): Latitude for nearby search
-        lng (float): Longitude for nearby search
-        place (str): City, state, or ZIP for text search
-        radius (int): Search radius in meters (default ~20 miles)
-    
     Returns:
         JSON: {\"results\": [...veteran places...]}  or  {\"error\": \"...\"}
     """
@@ -530,14 +522,13 @@ def veterans_nearby(request):
                         "formattedAddress": addr,
                         "location": {"latitude": plat, "longitude": plng},
                         "googleMapsUri": maps_uri,
-                        # placeholders for enrichment
                         "nationalPhoneNumber": None,
                         "internationalPhoneNumber": None,
                         "websiteUri": None,
                         "place_id": pid,
                     }
                 )
-            # Enrich with Place Details for a small number of results to fetch phone/website
+            # small number of results to fetch phone/website
             try:
                 details_limit = int(os.getenv('GOOGLE_PLACES_DETAILS_LIMIT', '5'))
             except Exception:
@@ -565,11 +556,11 @@ def veterans_nearby(request):
                         p['internationalPhoneNumber'] = result.get('international_phone_number')
                         p['websiteUri'] = result.get('website')
                 except Exception:
-                    # Ignore enrichment failures; return base data
+                    # Ignore failures, return base data
                     pass
                 p_count += 1
 
-            # Remove internal place_id before returning (we used it only for enrichment)
+            # Remove internal place_id before returning
             for p in places:
                 if 'place_id' in p:
                     del p['place_id']
@@ -581,7 +572,6 @@ def veterans_nearby(request):
             return JsonResponse({"results": [], "error": "Upstream request failed", "details": str(e)}, status=200)
 
     # ========== ROUTE 2: Text Search (fallback if no lat/lng) ==========
-    # Slower but flexible (works with city names, ZIP codes, addresses).
     # Good for desktop users or when GPS is unavailable/disabled.
     if not place:
         return JsonResponse({"results": [], "error": "Provide ?place=City, State or lat/lng"}, status=200)
